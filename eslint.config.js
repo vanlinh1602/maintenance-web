@@ -10,7 +10,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist',
-      'node_modules/*',
+      'node_modules',
       'src/components/ui/*',
       'src/components/hooks/*',
     ],
