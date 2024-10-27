@@ -1,7 +1,7 @@
 import './App.css';
 
 import { ScrollArea } from '@radix-ui/react-scroll-area';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -9,16 +9,19 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
 
+import { Waiting } from './components';
+import { useCatalogStore } from './features/catalog/hooks';
 import { Header } from './features/layouts/Header';
 
 const DashboardPage = lazy(() => import('./pages/Dashboard'));
-const EquipmentPage = lazy(() => import('./pages/Equipment'));
-const MaintenancePage = lazy(() => import('./pages/Maintenance'));
+const DevicePage = lazy(() => import('./pages/Device'));
+const RequestPage = lazy(() => import('./pages/Request'));
 const ReportsPage = lazy(() => import('./pages/Reports'));
-const ControlPage = lazy(() => import('./pages/Control'));
-const EquipmentDetailPage = lazy(() => import('./pages/EquipmentDetail'));
-const MaintenanceDetailPage = lazy(() => import('./pages/MaintenanceDetail'));
+const CatalogPage = lazy(() => import('./pages/Catalog'));
+const DeviceDetailPage = lazy(() => import('./pages/DeviceDetail'));
+const RequestDetailPage = lazy(() => import('./pages/RequestDetail'));
 
 const AppLayout = () => (
   <Suspense>
@@ -34,20 +37,32 @@ const AppLayout = () => (
 );
 
 function App() {
+  const { handling, getCatalog } = useCatalogStore(
+    useShallow((state) => ({
+      handling: state.handling,
+      getCatalog: state.getCatalog,
+    }))
+  );
+
+  useEffect(() => {
+    getCatalog();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route element={<AppLayout />}>
         <Route path="/" element={<DashboardPage />} />
-        <Route path="/equipment" element={<Outlet />}>
-          <Route path=":id" element={<EquipmentDetailPage />} />
-          <Route path="" element={<EquipmentPage />} />
+        <Route path="/device" element={<Outlet />}>
+          <Route path=":id" element={<DeviceDetailPage />} />
+          <Route path="" element={<DevicePage />} />
         </Route>
-        <Route path="/maintenance" element={<Outlet />}>
-          <Route path=":id" element={<MaintenanceDetailPage />} />
-          <Route path="" element={<MaintenancePage />} />
+        <Route path="/request" element={<Outlet />}>
+          <Route path=":id" element={<RequestDetailPage />} />
+          <Route path="" element={<RequestPage />} />
         </Route>
         <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/control" element={<ControlPage />} />
+        <Route path="/catalog" element={<CatalogPage />} />
         <Route
           path="*"
           element={
@@ -62,6 +77,7 @@ function App() {
 
   return (
     <>
+      {handling ? <Waiting /> : null}
       <RouterProvider router={router} />
     </>
   );

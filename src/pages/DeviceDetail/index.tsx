@@ -32,8 +32,8 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
-// Mock data for a specific piece of equipment
-const equipmentData = {
+// Mock data for a specific piece of device
+const deviceData = {
   id: 1,
   name: 'Forklift A',
   type: 'Forklift',
@@ -69,72 +69,69 @@ const equipmentData = {
   ],
 };
 
-export default function EquipmentDetailsPage() {
+export default function DeviceDetailsPage() {
   const [date, setDate] = useState<Date | undefined>(
-    new Date(equipmentData.nextScheduledMaintenance)
+    new Date(deviceData.nextScheduledMaintenance)
   );
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Button variant="ghost" className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Equipment List
+        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Device List
       </Button>
 
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{equipmentData.name}</h1>
-          <p className="text-xl text-muted-foreground">{equipmentData.type}</p>
+          <h1 className="text-3xl font-bold">{deviceData.name}</h1>
+          <p className="text-xl text-muted-foreground">{deviceData.type}</p>
         </div>
         <Badge
           variant={
-            equipmentData.status === 'Operational'
+            deviceData.status === 'Operational'
               ? 'default'
-              : equipmentData.status === 'In Maintenance'
+              : deviceData.status === 'In Maintenance'
               ? 'secondary'
               : 'destructive'
           }
           className="text-lg py-1 px-3"
         >
-          {equipmentData.status}
+          {deviceData.status}
         </Badge>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Equipment Details</CardTitle>
+            <CardTitle>Device Details</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Model</Label>
-                <p>{equipmentData.model}</p>
+                <p>{deviceData.model}</p>
               </div>
               <div>
                 <Label>Serial Number</Label>
-                <p>{equipmentData.serialNumber}</p>
+                <p>{deviceData.serialNumber}</p>
               </div>
               <div>
                 <Label>Purchase Date</Label>
                 <p>
-                  {format(new Date(equipmentData.purchaseDate), 'MMMM d, yyyy')}
+                  {format(new Date(deviceData.purchaseDate), 'MMMM d, yyyy')}
                 </p>
               </div>
               <div>
                 <Label>Location</Label>
-                <p>{equipmentData.location}</p>
+                <p>{deviceData.location}</p>
               </div>
               <div>
                 <Label>Assigned To</Label>
-                <p>{equipmentData.assignedTo}</p>
+                <p>{deviceData.assignedTo}</p>
               </div>
               <div>
                 <Label>Last Maintenance</Label>
                 <p>
-                  {format(
-                    new Date(equipmentData.lastMaintenance),
-                    'MMMM d, yyyy'
-                  )}
+                  {format(new Date(deviceData.lastMaintenance), 'MMMM d, yyyy')}
                 </p>
               </div>
             </div>
@@ -146,18 +143,16 @@ export default function EquipmentDetailsPage() {
             <CardTitle>Specifications</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            {Object.entries(equipmentData.specifications).map(
-              ([key, value]) => (
-                <div key={key}>
-                  <Label>
-                    {key
-                      .replace(/([A-Z])/g, ' $1')
-                      .replace(/^./, (str) => str.toUpperCase())}
-                  </Label>
-                  <p>{value}</p>
-                </div>
-              )
-            )}
+            {Object.entries(deviceData.specifications).map(([key, value]) => (
+              <div key={key}>
+                <Label>
+                  {key
+                    .replace(/([A-Z])/g, ' $1')
+                    .replace(/^./, (str) => str.toUpperCase())}
+                </Label>
+                <p>{value}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
 
@@ -167,7 +162,7 @@ export default function EquipmentDetailsPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              {equipmentData.maintenanceHistory.map((maintenance, index) => (
+              {deviceData.maintenanceHistory.map((maintenance, index) => (
                 <li key={index} className="bg-muted p-4 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div>
@@ -277,7 +272,7 @@ export default function EquipmentDetailsPage() {
             <DialogHeader>
               <DialogTitle>Report an Issue</DialogTitle>
               <DialogDescription>
-                Describe the problem you're experiencing with this equipment.
+                Describe the problem you're experiencing with this device.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">

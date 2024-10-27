@@ -3,9 +3,9 @@
 import {
   CalendarDays,
   CheckCircle,
-  PenTool,
+  Construction,
+  MonitorSmartphone,
   Settings,
-  Truck,
 } from 'lucide-react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
@@ -40,9 +40,9 @@ export default function Dashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Equipment
+                Total Device
               </CardTitle>
-              <Truck className="h-4 w-4 text-muted-foreground" />
+              <MonitorSmartphone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">245</div>
@@ -68,7 +68,7 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">
                 In Maintenance
               </CardTitle>
-              <PenTool className="h-4 w-4 text-muted-foreground" />
+              <Construction className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">25</div>

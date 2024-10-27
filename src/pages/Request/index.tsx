@@ -251,7 +251,7 @@ export default function MaintenancePage() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
                   <DropdownMenuItem
-                    onSelect={() => navigate(`/maintenance/${task.id}`)}
+                    onSelect={() => navigate(`/request/${task.id}`)}
                   >
                     View Details
                   </DropdownMenuItem>
