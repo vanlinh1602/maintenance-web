@@ -1,8 +1,7 @@
-'use client';
-
 import { format } from 'date-fns';
-import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,22 +66,42 @@ const maintenanceData = {
 };
 
 export default function MaintenanceDetailsPage() {
+  const { id } = useParams<{ id: string }>();
+  console.log('id', id);
+
+  // const { requests, getRequest } = useRequestStore((state) => ({
+  //   requests: state.data,
+  //   getRequest: state.getRequest,
+  // }));
+
+  // const { devices, getDevices } = useDeviceStore((state) => ({
+  //   devices: state.data,
+  //   getDevices: state.getDevices,
+  // }));
+
+  // const request = useMemo(() => requests[id!] || {}, [requests, id]);
+
+  useEffect(() => {
+    // if (!request.id) {
+    //   getRequest(id!);
+    // }
+    // if (!Object.keys(devices).length) {
+    //   getDevices();
+    // }
+  }, []);
+
   const [checklist, setChecklist] = useState(maintenanceData.checklist);
 
-  const toggleChecklistItem = (id: number) => {
+  const toggleChecklistItem = (idCheck: number) => {
     setChecklist(
       checklist.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
+        item.id === idCheck ? { ...item, completed: !item.completed } : item
       )
     );
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Button variant="ghost" className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Maintenance List
-      </Button>
-
       <div className="flex justify-between items-start mb-6">
         <div>
           <h1 className="text-3xl font-bold">

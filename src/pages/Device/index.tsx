@@ -1,8 +1,10 @@
 import { MoreHorizontal, Plus, Search } from 'lucide-react';
+import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 
+import { Waiting } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,63 +24,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { DeviceEditor, RequestRepair } from '@/features/device/components';
+import { useCatalogStore } from '@/features/catalog/hooks';
+import { DeviceEditor } from '@/features/device/components';
 import { useDeviceStore } from '@/features/device/hooks';
 import { Device } from '@/features/device/type';
+import { RequestRepair } from '@/features/request/components';
 
 // Mock data for device
-const deviceData = [
-  {
-    id: 1,
-    name: 'Forklift A',
-    type: 'Forklift',
-    status: 'Operational',
-    lastMaintenance: '2023-09-15',
-  },
-  {
-    id: 2,
-    name: 'CNC Machine B',
-    type: 'CNC Machine',
-    status: 'In Maintenance',
-    lastMaintenance: '2023-10-01',
-  },
-  {
-    id: 3,
-    name: 'Conveyor Belt C',
-    type: 'Conveyor',
-    status: 'Operational',
-    lastMaintenance: '2023-08-30',
-  },
-  {
-    id: 4,
-    name: 'Drill Press D',
-    type: 'Drill Press',
-    status: 'In Repair',
-    lastMaintenance: '2023-09-22',
-  },
-  {
-    id: 5,
-    name: 'Lathe E',
-    type: 'Lathe',
-    status: 'Operational',
-    lastMaintenance: '2023-10-05',
-  },
-];
 
 export default function DevicePage() {
   const navigate = useNavigate();
 
-  const { devices, getDevices } = useDeviceStore(
+  const { handling, devices, getDevices, deleteDevice } = useDeviceStore(
     useShallow((state) => ({
+      handling: state.handling,
       devices: state.data,
       getDevices: state.getDevices,
+      deleteDevice: state.deleteDevice,
+    }))
+  );
+
+  const { deviceStatues, users, rooms, deviceTypes } = useCatalogStore(
+    useShallow((state) => ({
+      deviceStatues: state.data.device.status,
+      rooms: state.data.rooms,
+      users: state.data.users,
+      deviceTypes: state.data.device.type,
     }))
   );
 
@@ -90,18 +61,16 @@ export default function DevicePage() {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
   const [repairDevice, setRepairDevice] = useState<Device>();
   const [deviceEdit, setDeviceEdit] = useState<Partial<Device>>();
 
-  const filteredDevice = deviceData.filter(
-    (device) =>
-      device.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (statusFilter === 'All' || device.status === statusFilter)
+  const filteredDevice = Object.values(devices).filter((device) =>
+    device.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {handling ? <Waiting /> : null}
       {deviceEdit ? (
         <DeviceEditor
           device={deviceEdit}
@@ -128,27 +97,16 @@ export default function DevicePage() {
             <Input
               type="search"
               placeholder="Search device..."
-              className="pl-8 md:w-[300px] lg:w-[300px]"
+              className="pl-8 md:w-[300px] lg:w-[300px] bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Select onValueChange={(value) => setStatusFilter(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All</SelectItem>
-              <SelectItem value="Operational">Operational</SelectItem>
-              <SelectItem value="In Maintenance">In Maintenance</SelectItem>
-              <SelectItem value="In Repair">In Repair</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <Button variant="outline">Schedule Maintenance</Button>
           <Button variant="outline">Generate Report</Button>
-        </div>
+        </div> */}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -156,23 +114,32 @@ export default function DevicePage() {
           <Card key={device.id}>
             <CardHeader>
               <CardTitle>{device.name}</CardTitle>
-              <CardDescription>{device.type}</CardDescription>
+              <CardDescription>
+                {deviceTypes[device.type]?.type}
+                <div>
+                  <span className="text-sm text-muted-foreground">Serial:</span>{' '}
+                  {device.serial}
+                </div>
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-between items-center">
-                <Badge
-                  variant={
-                    device.status === 'Operational'
-                      ? 'default'
-                      : device.status === 'In Maintenance'
-                      ? 'secondary'
-                      : 'destructive'
-                  }
-                >
-                  {device.status}
-                </Badge>
+              <div className="flex flex-col justify-start">
                 <span className="text-sm text-muted-foreground">
-                  Last Maintenance: {device.lastMaintenance}
+                  Room:{' '}
+                  {rooms[device.roomId || '']?.name ||
+                    'Not assigned to any room'}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  User:{' '}
+                  {users[device.employeeId || '']?.name ||
+                    'Not assigned to any user'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <Badge>{deviceStatues[device.status]?.status}</Badge>
+                <span className="text-sm text-muted-foreground">
+                  Last Assign:{' '}
+                  {moment(device.assignedDate).format('DD/MM/YYYY')}
                 </span>
               </div>
             </CardContent>
@@ -191,21 +158,16 @@ export default function DevicePage() {
                   >
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => console.log('Edit Device')}>
+                  <DropdownMenuItem onSelect={() => setDeviceEdit(device)}>
                     Edit Device
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => console.log('Schedule Maintenance')}
-                  >
-                    Schedule Maintenance
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => setRepairDevice(undefined)}>
+                  <DropdownMenuItem onSelect={() => setRepairDevice(device)}>
                     Request Repair
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-red-600"
-                    onSelect={() => console.log('Delete Device')}
+                    onSelect={() => deleteDevice(device.id)}
                   >
                     Delete Device
                   </DropdownMenuItem>

@@ -1,8 +1,8 @@
-'use client';
-
 import { format } from 'date-fns';
-import { AlertTriangle, ArrowLeft, CalendarIcon, Wrench } from 'lucide-react';
-import { useState } from 'react';
+import { AlertTriangle, CalendarIcon, Wrench } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useCatalogStore } from '@/features/catalog/hooks';
+import { useDeviceStore } from '@/features/device/hooks';
+import { Device } from '@/features/device/type';
 
 // Mock data for a specific piece of device
 const deviceData = {
@@ -70,32 +73,48 @@ const deviceData = {
 };
 
 export default function DeviceDetailsPage() {
+  const { id } = useParams<{ id: string }>();
+
+  const { devices, getDevice } = useDeviceStore(
+    useShallow((state) => ({
+      devices: state.data,
+      getDevice: state.getDevice,
+    }))
+  );
+
+  const device: Device = useMemo(() => devices[id || ''] || {}, [devices, id]);
+
+  useEffect(() => {
+    if (!device.id) {
+      getDevice(id!);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const { deviceStatues, users, rooms, deviceTypes } = useCatalogStore(
+    useShallow((state) => ({
+      deviceStatues: state.data.device.status,
+      rooms: state.data.rooms,
+      users: state.data.users,
+      deviceTypes: state.data.device.type,
+    }))
+  );
+
   const [date, setDate] = useState<Date | undefined>(
     new Date(deviceData.nextScheduledMaintenance)
   );
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Button variant="ghost" className="mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Device List
-      </Button>
-
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{deviceData.name}</h1>
-          <p className="text-xl text-muted-foreground">{deviceData.type}</p>
+          <h1 className="text-3xl font-bold">{device.name}</h1>
+          <p className="text-xl text-muted-foreground">
+            {deviceTypes[device.type]?.type}
+          </p>
         </div>
-        <Badge
-          variant={
-            deviceData.status === 'Operational'
-              ? 'default'
-              : deviceData.status === 'In Maintenance'
-              ? 'secondary'
-              : 'destructive'
-          }
-          className="text-lg py-1 px-3"
-        >
-          {deviceData.status}
+        <Badge className="text-lg py-1 px-3">
+          {deviceStatues[device.status]?.status}
         </Badge>
       </div>
 
@@ -108,30 +127,34 @@ export default function DeviceDetailsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Model</Label>
-                <p>{deviceData.model}</p>
+                <p>{deviceTypes[device.type]?.type}</p>
               </div>
               <div>
                 <Label>Serial Number</Label>
-                <p>{deviceData.serialNumber}</p>
+                <p>{device.serial}</p>
               </div>
               <div>
                 <Label>Purchase Date</Label>
                 <p>
-                  {format(new Date(deviceData.purchaseDate), 'MMMM d, yyyy')}
+                  {device.purchaseDate
+                    ? format(new Date(device.purchaseDate), 'dd/LL/y')
+                    : null}
                 </p>
               </div>
               <div>
                 <Label>Location</Label>
-                <p>{deviceData.location}</p>
+                <p>{rooms[device.roomId || '']?.name}</p>
               </div>
               <div>
                 <Label>Assigned To</Label>
-                <p>{deviceData.assignedTo}</p>
+                <p>{users[device.employeeId || '']?.name}</p>
               </div>
               <div>
-                <Label>Last Maintenance</Label>
+                <Label>Assign Date</Label>
                 <p>
-                  {format(new Date(deviceData.lastMaintenance), 'MMMM d, yyyy')}
+                  {device.assignedDate
+                    ? format(new Date(device.assignedDate), 'dd/LL/y')
+                    : ''}
                 </p>
               </div>
             </div>
@@ -143,16 +166,18 @@ export default function DeviceDetailsPage() {
             <CardTitle>Specifications</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            {Object.entries(deviceData.specifications).map(([key, value]) => (
-              <div key={key}>
-                <Label>
-                  {key
-                    .replace(/([A-Z])/g, ' $1')
-                    .replace(/^./, (str) => str.toUpperCase())}
-                </Label>
-                <p>{value}</p>
-              </div>
-            ))}
+            <div>
+              <Label>Warranty ExpireDate</Label>
+              <p>
+                {device.warrantyExpireDate
+                  ? format(new Date(device.warrantyExpireDate), 'dd/LL/y')
+                  : null}
+              </p>
+            </div>
+            <div>
+              <Label>Description</Label>
+              <p>{device.description}</p>
+            </div>
           </CardContent>
         </Card>
 

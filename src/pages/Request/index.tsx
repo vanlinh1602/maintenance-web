@@ -1,13 +1,14 @@
 'use client';
 
-import { format } from 'date-fns';
-import { CalendarIcon, MoreHorizontal, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
+import { MoreHorizontal } from 'lucide-react';
+import moment from 'moment';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
 
+import { Waiting } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import {
   Card,
   CardContent,
@@ -17,15 +18,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -33,160 +25,46 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
-// Mock data for maintenance tasks
-const maintenanceTasks = [
-  {
-    id: 1,
-    equipment: 'Forklift A',
-    type: 'Routine',
-    status: 'Scheduled',
-    date: '2023-11-15',
-  },
-  {
-    id: 2,
-    equipment: 'CNC Machine B',
-    type: 'Repair',
-    status: 'In Progress',
-    date: '2023-11-10',
-  },
-  {
-    id: 3,
-    equipment: 'Conveyor Belt C',
-    type: 'Inspection',
-    status: 'Completed',
-    date: '2023-11-05',
-  },
-  {
-    id: 4,
-    equipment: 'Drill Press D',
-    type: 'Routine',
-    status: 'Scheduled',
-    date: '2023-11-20',
-  },
-  {
-    id: 5,
-    equipment: 'Lathe E',
-    type: 'Repair',
-    status: 'Pending',
-    date: '2023-11-18',
-  },
-];
+import { useDeviceStore } from '@/features/device/hooks';
+import { useRequestStore } from '@/features/request/hooks';
 
 export default function MaintenancePage() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [date, setDate] = useState<Date>();
 
-  const filteredTasks = maintenanceTasks.filter(
-    (task) =>
-      task.equipment.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (statusFilter === 'All' || task.status === statusFilter)
+  const { handling, requests, getRequests, deleteRequest } = useRequestStore(
+    useShallow((state) => ({
+      handling: state.handling,
+      requests: state.data,
+      getRequests: state.getRequests,
+      deleteRequest: state.deleteRequest,
+    }))
   );
+
+  const { devices, getDevices } = useDeviceStore(
+    useShallow((state) => ({
+      devices: state.data,
+      getDevices: state.getDevices,
+    }))
+  );
+
+  useEffect(() => {
+    if (!Object.keys(requests).length) {
+      getRequests();
+    }
+    if (!Object.keys(devices).length) {
+      getDevices();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {handling ? <Waiting /> : null}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Maintenance Management</h1>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Schedule Maintenance
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Schedule Maintenance</DialogTitle>
-              <DialogDescription>
-                Enter the details for the new maintenance task. Click save when
-                you're done.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="equipment" className="text-right">
-                  Equipment
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select equipment" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="forklift-a">Forklift A</SelectItem>
-                    <SelectItem value="cnc-machine-b">CNC Machine B</SelectItem>
-                    <SelectItem value="conveyor-belt-c">
-                      Conveyor Belt C
-                    </SelectItem>
-                    <SelectItem value="drill-press-d">Drill Press D</SelectItem>
-                    <SelectItem value="lathe-e">Lathe E</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">
-                  Type
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="routine">Routine</SelectItem>
-                    <SelectItem value="repair">Repair</SelectItem>
-                    <SelectItem value="inspection">Inspection</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="date" className="text-right">
-                  Date
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={`col-span-3 ${
-                        !date && 'text-muted-foreground'
-                      }`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Save changes</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
 
-      <div className="flex justify-between items-center mb-4">
+      {/* <div className="flex justify-between items-center mb-4">
         <div className="flex items-center space-x-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
@@ -211,14 +89,16 @@ export default function MaintenancePage() {
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </div> */}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredTasks.map((task) => (
+        {Object.values(requests).map((task) => (
           <Card key={task.id}>
             <CardHeader>
-              <CardTitle>{task.equipment}</CardTitle>
-              <CardDescription>{task.type} Maintenance</CardDescription>
+              <CardTitle>
+                {task.type.toUpperCase()} - {devices[task.deviceId]?.name}
+              </CardTitle>
+              <CardDescription>{task.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center">
@@ -233,10 +113,10 @@ export default function MaintenancePage() {
                       : 'destructive'
                   }
                 >
-                  {task.status}
+                  {task.status.toUpperCase()}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
-                  Date: {task.date}
+                  Date create: {moment(task.createdDate).format('DD/MM/YYYY')}
                 </span>
               </div>
             </CardContent>
@@ -255,10 +135,13 @@ export default function MaintenancePage() {
                   >
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Edit Task</DropdownMenuItem>
-                  <DropdownMenuItem>Mark as Completed</DropdownMenuItem>
+                  {/* <DropdownMenuItem>Edit Task</DropdownMenuItem>
+                  <DropdownMenuItem>Mark as Completed</DropdownMenuItem> */}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onSelect={() => deleteRequest(task.id)}
+                  >
                     Cancel Task
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -9,7 +9,7 @@ export interface Device {
   status: string;
   roomId?: string;
   employeeId?: string;
-  categoryId: string;
+  type: string;
 }
 
 export type DeviceState = {

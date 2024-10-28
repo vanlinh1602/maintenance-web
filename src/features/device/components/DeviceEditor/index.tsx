@@ -1,7 +1,9 @@
 import { CalendarIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
+import { toast } from '@/components/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -26,8 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { deviceStatus } from '@/lib/options';
+import { useCatalogStore } from '@/features/catalog/hooks';
 
+import { useDeviceStore } from '../../hooks';
 import { Device } from '../../type';
 
 type Props = {
@@ -36,10 +39,108 @@ type Props = {
 };
 
 const DeviceEditor = ({ device, onClose }: Props) => {
+  const { createDevice, updateDevice } = useDeviceStore(
+    useShallow((state) => ({
+      createDevice: state.createDevice,
+      updateDevice: state.updateDevice,
+    }))
+  );
+
+  const { statues, users, rooms, types } = useCatalogStore(
+    useShallow((state) => ({
+      statues: state.data.device.status,
+      rooms: state.data.rooms,
+      users: state.data.users,
+      types: state.data.device.type,
+    }))
+  );
+
   const [editor, setEditor] = useState<Partial<Device>>(device);
   const [purchaseDate, setPurchaseDate] = useState<Date>();
   const [assignedDate, setAssignedDate] = useState<Date>();
   const [warrantyExpireDate, setWarrantyExpireDate] = useState<Date>();
+
+  useEffect(() => {
+    if (device.purchaseDate) {
+      setPurchaseDate(new Date(device.purchaseDate));
+    }
+    if (device.assignedDate) {
+      setAssignedDate(new Date(device.assignedDate));
+    }
+    if (device.warrantyExpireDate) {
+      setWarrantyExpireDate(new Date(device.warrantyExpireDate));
+    }
+  }, [device]);
+
+  const validate = useCallback((data: Partial<Device>) => {
+    if (!data.name) {
+      toast({
+        title: 'Error',
+        description: 'Name is required',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (!data.serial) {
+      toast({
+        title: 'Error',
+        description: 'Serial is required',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (!data.purchaseDate) {
+      toast({
+        title: 'Error',
+        description: 'Purchase date is required',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (!data.warrantyExpireDate) {
+      toast({
+        title: 'Error',
+        description: 'Warranty expire date is required',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (!data.status) {
+      toast({
+        title: 'Error',
+        description: 'Status is required',
+        variant: 'destructive',
+      });
+      return false;
+    }
+    if (!data.type) {
+      toast({
+        title: 'Error',
+        description: 'Type is required',
+        variant: 'destructive',
+      });
+      return;
+    }
+    return true;
+  }, []);
+
+  const handleSave = () => {
+    const data: Partial<Device> = {
+      ...editor,
+      purchaseDate: purchaseDate?.getTime(),
+      assignedDate: assignedDate?.getTime(),
+      warrantyExpireDate: warrantyExpireDate?.getTime(),
+    };
+    if (!validate(data)) {
+      return;
+    }
+    if (device.id) {
+      updateDevice(device.id, data);
+    } else {
+      createDevice(data);
+    }
+    onClose();
+  };
 
   return (
     <Dialog
@@ -63,6 +164,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name
+              <span className="text-red-600">*</span>
             </Label>
             <Input
               id="name"
@@ -72,8 +174,22 @@ const DeviceEditor = ({ device, onClose }: Props) => {
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="description" className="text-right">
+              Description
+            </Label>
+            <Input
+              id="description"
+              className="col-span-3"
+              value={editor.description}
+              onChange={(e) =>
+                setEditor({ ...editor, description: e.target.value })
+              }
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="type" className="text-right">
               Serial
+              <span className="text-red-600">*</span>
             </Label>
             <Input
               id="serial"
@@ -85,6 +201,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="maintenance-date" className="text-right">
               Purchase Date
+              <span className="text-red-600">*</span>
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -96,7 +213,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {purchaseDate ? (
-                    format(purchaseDate, 'd/L/y')
+                    format(purchaseDate, 'dd/LL/y')
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -126,7 +243,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {assignedDate ? (
-                    format(assignedDate, 'd/L/y')
+                    format(assignedDate, 'dd/LL/y')
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -145,6 +262,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="warranty-expire-date" className="text-right">
               Warranty Expire Date
+              <span className="text-red-600">*</span>
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -156,7 +274,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {warrantyExpireDate ? (
-                    format(warrantyExpireDate, 'd/L/y')
+                    format(warrantyExpireDate, 'dd/LL/y')
                   ) : (
                     <span>Pick a date</span>
                   )}
@@ -173,68 +291,95 @@ const DeviceEditor = ({ device, onClose }: Props) => {
             </Popover>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">
-              Status
+            <Label htmlFor="type" className="text-right">
+              Type
+              <span className="text-red-600">*</span>
             </Label>
-            <Select>
+            <Select
+              onValueChange={(value) => setEditor({ ...editor, type: value })}
+              value={editor.type}
+            >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(deviceStatus).map(([statusKey, status]) => (
-                  <SelectItem key={statusKey} value={statusKey}>
-                    {status}
+                {Object.entries(types).map(([typeKey, type]) => (
+                  <SelectItem key={typeKey} value={typeKey}>
+                    {type.type}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="description" className="text-right">
-              Description
+            <Label htmlFor="status" className="text-right">
+              Status
+              <span className="text-red-600">*</span>
             </Label>
-            <Input
-              id="description"
-              className="col-span-3"
-              value={editor.description}
-              onChange={(e) =>
-                setEditor({ ...editor, description: e.target.value })
-              }
-            />
+            <Select
+              onValueChange={(value) => setEditor({ ...editor, status: value })}
+              value={editor.status}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(statues).map(([statusKey, status]) => (
+                  <SelectItem key={statusKey} value={statusKey}>
+                    {status.status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="room" className="text-right">
               Room
             </Label>
-            <Select>
+            <Select
+              onValueChange={(value) => setEditor({ ...editor, roomId: value })}
+              value={editor.roomId}
+            >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select room" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Room 1</SelectItem>
-                <SelectItem value="2">Room 2</SelectItem>
-                <SelectItem value="3">Room 3</SelectItem>
+                {Object.entries(rooms).map(([roomKey, room]) => (
+                  <SelectItem key={roomKey} value={roomKey}>
+                    {room.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="employee" className="text-right">
-              Employee
+              User
             </Label>
-            <Select>
+            <Select
+              onValueChange={(value) =>
+                setEditor({ ...editor, employeeId: value })
+              }
+              value={editor.employeeId}
+            >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select employee" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Employee 1</SelectItem>
-                <SelectItem value="2">Employee 2</SelectItem>
-                <SelectItem value="3">Employee 3</SelectItem>
+                {Object.entries(users).map(([userKey, user]) => (
+                  <SelectItem key={userKey} value={userKey}>
+                    {user.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button type="submit" onClick={handleSave}>
+            Save changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

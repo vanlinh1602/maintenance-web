@@ -47,6 +47,7 @@ const UsersTab = () => {
   const filteredPersonnel = Object.values(users).filter((person) =>
     person.name.toLowerCase().includes(filter.toLowerCase())
   );
+  console.log('filteredPersonnel', filteredPersonnel);
 
   const handleSave = (type: Partial<User>) => {
     if (type.id) {
@@ -99,7 +100,7 @@ const UsersTab = () => {
             {filteredPersonnel.map((person) => (
               <TableRow key={person.id}>
                 <TableCell>{person.name}</TableCell>
-                <TableCell>{rooms[person.roomId].name}</TableCell>
+                <TableCell>{rooms[person.roomId]?.name}</TableCell>
                 <TableCell>{person.roleId}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
