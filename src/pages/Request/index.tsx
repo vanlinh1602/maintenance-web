@@ -25,6 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useCatalogStore } from '@/features/catalog/hooks';
 import { useDeviceStore } from '@/features/device/hooks';
 import { useRequestStore } from '@/features/request/hooks';
 
@@ -44,6 +45,12 @@ export default function MaintenancePage() {
     useShallow((state) => ({
       devices: state.data,
       getDevices: state.getDevices,
+    }))
+  );
+
+  const { requestType } = useCatalogStore(
+    useShallow((state) => ({
+      requestType: state.data.request.type,
     }))
   );
 
@@ -94,22 +101,14 @@ export default function MaintenancePage() {
           <Card key={task.id}>
             <CardHeader>
               <CardTitle>
-                {task.type.toUpperCase()} - {devices[task.deviceId]?.name}
+                {requestType[task.type]?.name} - {devices[task.deviceId]?.name}
               </CardTitle>
               <CardDescription>{task.description}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center">
                 <Badge
-                  variant={
-                    task.status === 'Completed'
-                      ? 'default'
-                      : task.status === 'In Progress'
-                      ? 'secondary'
-                      : task.status === 'Scheduled'
-                      ? 'outline'
-                      : 'destructive'
-                  }
+                  style={{ backgroundColor: requestType[task.type]?.color }}
                 >
                   {task.status.toUpperCase()}
                 </Badge>

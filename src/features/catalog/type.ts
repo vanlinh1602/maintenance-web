@@ -20,6 +20,7 @@ export type Role = {
 export type DeviceStatus = {
   id: string;
   name: string;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -27,6 +28,7 @@ export type DeviceStatus = {
 export type DeviceType = {
   id: string;
   name: string;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -41,6 +43,7 @@ export type RequestStatus = {
 export type RequestType = {
   id: string;
   name: string;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 };

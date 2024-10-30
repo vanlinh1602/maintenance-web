@@ -8,6 +8,7 @@ export interface Request {
     timestamp: number;
   }[];
   status: string;
+  scheduledDate?: number;
   completedDate?: number;
   creator: string;
   assignedTo?: string;

@@ -110,11 +110,11 @@ export default function DeviceDetailsPage() {
         <div>
           <h1 className="text-3xl font-bold">{device.name}</h1>
           <p className="text-xl text-muted-foreground">
-            {deviceTypes[device.type]?.type}
+            {deviceTypes[device.type]?.name}
           </p>
         </div>
         <Badge className="text-lg py-1 px-3">
-          {deviceStatues[device.status]?.status}
+          {deviceStatues[device.status]?.name}
         </Badge>
       </div>
 
@@ -127,7 +127,7 @@ export default function DeviceDetailsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Model</Label>
-                <p>{deviceTypes[device.type]?.type}</p>
+                <p>{deviceTypes[device.type]?.name}</p>
               </div>
               <div>
                 <Label>Serial Number</Label>

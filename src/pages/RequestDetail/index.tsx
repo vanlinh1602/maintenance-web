@@ -1,80 +1,34 @@
-import { format } from 'date-fns';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 
+import { Waiting } from '@/components';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { useCatalogStore } from '@/features/catalog/hooks';
 import { useDeviceStore } from '@/features/device/hooks';
+import {
+  AddRequestNote,
+  EditRequestStatus,
+  RequestAssign,
+  ShecduledRequest,
+} from '@/features/request/components';
 import { useRequestStore } from '@/features/request/hooks';
-
-// Mock data for a specific maintenance task
-const maintenanceData = {
-  id: 1,
-  equipment: 'Forklift A',
-  type: 'Routine',
-  status: 'Scheduled',
-  scheduledDate: '2023-12-15',
-  assignedTo: 'John Doe',
-  description:
-    'Perform routine maintenance including oil change, brake inspection, and general system check.',
-  estimatedDuration: '2 hours',
-  priority: 'Medium',
-  notes: [
-    {
-      date: '2023-11-20',
-      author: 'Jane Smith',
-      content: 'Ordered necessary parts for the maintenance.',
-    },
-    {
-      date: '2023-11-25',
-      author: 'Mike Johnson',
-      content:
-        'Confirmed availability of the equipment for the scheduled date.',
-    },
-  ],
-  checklist: [
-    { id: 1, task: 'Change oil', completed: false },
-    { id: 2, task: 'Inspect brakes', completed: false },
-    { id: 3, task: 'Check hydraulic system', completed: false },
-    { id: 4, task: 'Test all safety features', completed: false },
-    { id: 5, task: 'Lubricate moving parts', completed: false },
-  ],
-};
+import { priorities, requestStatuses } from '@/lib/options';
 
 export default function MaintenanceDetailsPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { requests, getRequest } = useRequestStore(
+  const { handling, requests, getRequest, updateRequest } = useRequestStore(
     useShallow((state) => ({
+      handling: state.handling,
       requests: state.data,
       getRequest: state.getRequest,
+      updateRequest: state.updateRequest,
     }))
   );
 
@@ -85,193 +39,208 @@ export default function MaintenanceDetailsPage() {
     }))
   );
 
+  const { requestType, deviceType, users } = useCatalogStore(
+    useShallow((state) => ({
+      requestType: state.data.request.type,
+      deviceType: state.data.device.type,
+      users: state.data.users,
+    }))
+  );
+
   const request = useMemo(() => requests[id!] || {}, [requests, id]);
+  const device = useMemo(
+    () => devices[request.deviceId!] || {},
+    [devices, request.deviceId]
+  );
 
   useEffect(() => {
-    if (!request.id) {
-      getRequest(id!);
+    if (id && !request?.id) {
+      getRequest(id);
     }
     if (!Object.keys(devices).length) {
       getDevices();
     }
   }, [devices, request.id, getRequest, getDevices, id]);
 
-  const [checklist, setChecklist] = useState(maintenanceData.checklist);
-
-  const toggleChecklistItem = (idCheck: number) => {
-    setChecklist(
-      checklist.map((item) =>
-        item.id === idCheck ? { ...item, completed: !item.completed } : item
-      )
-    );
-  };
+  const [updateStatus, setUpdateStatus] = useState(false);
+  const [assignTo, setAssignTo] = useState(false);
+  const [addNote, setAddNote] = useState(false);
+  const [shecduledDate, setShecduledDate] = useState(false);
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {handling && <Waiting />}
+      {updateStatus && (
+        <EditRequestStatus
+          onClose={() => setUpdateStatus(false)}
+          onSubmit={(status, note) => {
+            const notes = request.notes || [];
+            notes.push({
+              userId: 'user-id',
+              message: `Change status to ${
+                requestStatuses[status]?.name || status
+              }${note ? `: ${note}` : ''}`,
+              timestamp: moment().valueOf(),
+            });
+            updateRequest(request.id, { status, notes });
+            setUpdateStatus(false);
+          }}
+        />
+      )}
+      {assignTo && (
+        <RequestAssign
+          onClose={() => setAssignTo(false)}
+          onSubmit={(user) => {
+            const notes = request.notes || [];
+            notes.push({
+              userId: 'user-id',
+              message: `Assigned to ${users[user]?.name}`,
+              timestamp: moment().valueOf(),
+            });
+            updateRequest(request.id, { assignedTo: user, notes });
+            setAssignTo(false);
+          }}
+        />
+      )}
+      {addNote && (
+        <AddRequestNote
+          onClose={() => setAddNote(false)}
+          onSubmit={(note) => {
+            const notes = request.notes || [];
+            notes.push({
+              userId: 'user-id',
+              message: note,
+              timestamp: moment().valueOf(),
+            });
+            updateRequest(request.id, { notes });
+            setAddNote(false);
+          }}
+        />
+      )}
+      {shecduledDate && (
+        <ShecduledRequest
+          onClose={() => setShecduledDate(false)}
+          onSubmit={(date) => {
+            const notes = request.notes || [];
+            notes.push({
+              userId: 'user-id',
+              message: `Scheduled maintenance on ${moment(date).format(
+                'MMMM DD, yyyy'
+              )}`,
+              timestamp: moment().valueOf(),
+            });
+            updateRequest(request.id, { scheduledDate: date, notes });
+            setShecduledDate(false);
+          }}
+        />
+      )}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-3xl font-bold">
-            {maintenanceData.type} Maintenance
-          </h1>
+          <h1 className="text-3xl font-bold">{device.name}</h1>
           <p className="text-xl text-muted-foreground">
-            {maintenanceData.equipment}
+            {deviceType[device.type]?.name}
           </p>
         </div>
         <Badge
-          variant={
-            maintenanceData.status === 'Completed'
-              ? 'default'
-              : maintenanceData.status === 'In Progress'
-              ? 'secondary'
-              : 'outline'
-          }
+          style={{ backgroundColor: requestType[request.type]?.color }}
           className="text-lg py-1 px-3"
         >
-          {maintenanceData.status}
+          {requestType[request.type]?.name}
         </Badge>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Maintenance Details</CardTitle>
+            <CardTitle>Request Details</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Scheduled Date</Label>
-                <p>
-                  {format(
-                    new Date(maintenanceData.scheduledDate),
-                    'MMMM d, yyyy'
-                  )}
-                </p>
+                <Label>Create Date</Label>
+                <p>{moment(request.createdAt).format('MMMM DD, yyyy')}</p>
               </div>
               <div>
-                <Label>Assigned To</Label>
-                <p>{maintenanceData.assignedTo}</p>
-              </div>
-              <div>
-                <Label>Estimated Duration</Label>
-
-                <p>{maintenanceData.estimatedDuration}</p>
+                <Label>Creator</Label>
+                <p>{users[request.creator]?.name || request.creator}</p>
               </div>
               <div>
                 <Label>Priority</Label>
-                <p>{maintenanceData.priority}</p>
+                <p style={{ color: priorities[request.priority]?.color }}>
+                  {priorities[request.priority]?.name}
+                </p>
+              </div>
+              <div>
+                <Label>Assign To</Label>
+                <p>{users[request.assignedTo || '']?.name}</p>
+              </div>
+              <div>
+                <Label>Shecduled Date</Label>
+                <p>
+                  {request.scheduledDate
+                    ? moment(request.scheduledDate).format('MMMM DD, yyyy')
+                    : 'Not scheduled'}
+                </p>
+              </div>
+              <div>
+                <Label>Status</Label>
+                <p style={{ color: requestStatuses[request.status]?.color }}>
+                  {requestStatuses[request.status]?.name}
+                </p>
               </div>
             </div>
             <div>
               <Label>Description</Label>
-              <p>{maintenanceData.description}</p>
+              <p>{request.description}</p>
+            </div>
+            <div className="space-x-2">
+              <Button onClick={() => setUpdateStatus(true)}>
+                Update Maintenance Status
+              </Button>
+              <Button onClick={() => setAssignTo(true)} variant="secondary">
+                Assign To
+              </Button>
+              <Button
+                onClick={() => setShecduledDate(true)}
+                variant="secondary"
+              >
+                Schedule Maintenance
+              </Button>
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
-            <CardTitle>Maintenance Checklist</CardTitle>
+            <CardTitle className="flex justify-between">
+              Request Notes
+              <Button
+                variant="outline"
+                onClick={() => setAddNote(true)}
+                className="flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Note
+              </Button>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {checklist.map((item) => (
-                <li key={item.id} className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => toggleChecklistItem(item.id)}
-                  >
-                    {item.completed ? (
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-gray-300" />
-                    )}
-                  </Button>
-                  <span
-                    className={
-                      item.completed ? 'line-through text-muted-foreground' : ''
-                    }
-                  >
-                    {item.task}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Maintenance Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4">
-              {maintenanceData.notes.map((note, index) => (
-                <li key={index} className="bg-muted p-4 rounded-lg">
+            <div className="space-y-2">
+              {request.notes?.map((note, index) => (
+                <div key={index} className="bg-muted p-4 rounded-lg">
                   <div className="flex justify-between items-start">
-                    <p className="font-semibold">{note.author}</p>
+                    <p className="font-semibold">
+                      {users[note.userId]?.name || note.userId}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {format(new Date(note.date), 'MMMM d, yyyy')}
+                      {moment(request.createdAt).format('MMMM DD, yyyy')}
                     </p>
                   </div>
-                  <p className="mt-2">{note.content}</p>
-                </li>
+                  <p className="mt-2">{note.message}</p>
+                </div>
               ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full">Add Note</Button>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <div className="mt-6 flex space-x-4">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>Update Maintenance Status</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Update Maintenance Status</DialogTitle>
-              <DialogDescription>
-                Change the current status of this maintenance task.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="status" className="text-right">
-                  Status
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select new status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="scheduled">Scheduled</SelectItem>
-                    <SelectItem value="in-progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="status-notes" className="text-right">
-                  Notes
-                </Label>
-                <Textarea
-                  id="status-notes"
-                  placeholder="Add any relevant notes about this status change..."
-                  className="col-span-3"
-                />
-              </div>
             </div>
-            <DialogFooter>
-              <Button type="submit">Update Status</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Button variant="outline">Generate Report</Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -22,8 +22,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useCatalogStore } from '@/features/catalog/hooks';
 import { Device } from '@/features/device/type';
 import { Request } from '@/features/request/type';
+import { priorities } from '@/lib/options';
 
 import { useRequestStore } from '../../hooks';
 
@@ -43,6 +45,12 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
     }))
   );
 
+  const { requestTypes } = useCatalogStore(
+    useShallow((state) => ({
+      requestTypes: state.data.request.type,
+    }))
+  );
+
   const [editor, setEditor] = useState({
     description: '',
     priority: '',
@@ -58,13 +66,12 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
       });
       return;
     }
-    const dataUpdate: Omit<Request, 'id'> = {
+    const dataUpdate: Partial<Request> = {
       ...request,
       ...editor,
       deviceId: device.id,
       creator: 'user-id',
       status: 'pending',
-      createdDate: Date.now(),
     };
 
     if (request) {
@@ -111,9 +118,11 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
                   <SelectValue placeholder="Select urgency level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="repair">Repair</SelectItem>
-                  <SelectItem value="routine">Maintenance</SelectItem>
-                  <SelectItem value="inspection">Inspection</SelectItem>
+                  {Object.entries(requestTypes).map(([k, type]) => (
+                    <SelectItem key={k} value={k} style={{ color: type.color }}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -145,10 +154,15 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
                   <SelectValue placeholder="Select urgency level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
+                  {Object.entries(priorities).map(([k, priority]) => (
+                    <SelectItem
+                      key={k}
+                      value={k}
+                      style={{ color: priority.color }}
+                    >
+                      {priority.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

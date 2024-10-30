@@ -305,7 +305,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
               <SelectContent>
                 {Object.entries(types).map(([typeKey, type]) => (
                   <SelectItem key={typeKey} value={typeKey}>
-                    {type.type}
+                    {type.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -326,7 +326,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
               <SelectContent>
                 {Object.entries(statues).map(([statusKey, status]) => (
                   <SelectItem key={statusKey} value={statusKey}>
-                    {status.status}
+                    {status.name}
                   </SelectItem>
                 ))}
               </SelectContent>
