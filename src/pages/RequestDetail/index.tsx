@@ -1,7 +1,8 @@
 import { format } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,6 +31,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useDeviceStore } from '@/features/device/hooks';
+import { useRequestStore } from '@/features/request/hooks';
 
 // Mock data for a specific maintenance task
 const maintenanceData = {
@@ -67,28 +70,31 @@ const maintenanceData = {
 
 export default function MaintenanceDetailsPage() {
   const { id } = useParams<{ id: string }>();
-  console.log('id', id);
 
-  // const { requests, getRequest } = useRequestStore((state) => ({
-  //   requests: state.data,
-  //   getRequest: state.getRequest,
-  // }));
+  const { requests, getRequest } = useRequestStore(
+    useShallow((state) => ({
+      requests: state.data,
+      getRequest: state.getRequest,
+    }))
+  );
 
-  // const { devices, getDevices } = useDeviceStore((state) => ({
-  //   devices: state.data,
-  //   getDevices: state.getDevices,
-  // }));
+  const { devices, getDevices } = useDeviceStore(
+    useShallow((state) => ({
+      devices: state.data,
+      getDevices: state.getDevices,
+    }))
+  );
 
-  // const request = useMemo(() => requests[id!] || {}, [requests, id]);
+  const request = useMemo(() => requests[id!] || {}, [requests, id]);
 
   useEffect(() => {
-    // if (!request.id) {
-    //   getRequest(id!);
-    // }
-    // if (!Object.keys(devices).length) {
-    //   getDevices();
-    // }
-  }, []);
+    if (!request.id) {
+      getRequest(id!);
+    }
+    if (!Object.keys(devices).length) {
+      getDevices();
+    }
+  }, [devices, request.id, getRequest, getDevices, id]);
 
   const [checklist, setChecklist] = useState(maintenanceData.checklist);
 

@@ -11,7 +11,12 @@ export const defaultInitState: CatalogState = {
   data: {
     users: {},
     rooms: {},
+    roles: {},
     device: {
+      status: {},
+      type: {},
+    },
+    request: {
       status: {},
       type: {},
     },

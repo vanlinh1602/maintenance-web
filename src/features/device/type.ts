@@ -10,6 +10,8 @@ export interface Device {
   roomId?: string;
   employeeId?: string;
   type: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type DeviceState = {

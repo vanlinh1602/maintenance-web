@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useShallow } from 'zustand/shallow';
 
 import { toast } from '@/components/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -13,30 +13,17 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
-import { useCatalogStore } from '../../hooks';
-import { Room } from '../../type';
+import { Role } from '../../type';
 
 type Props = {
-  room: Partial<Room>;
+  role: Partial<Role>;
   onCancel: () => void;
-  onSave: (type: Partial<Room>) => void;
+  onSave: (type: Partial<Role>) => void;
 };
 
-export const RoomEditor = ({ room, onCancel, onSave }: Props) => {
-  const [editor, setEditor] = useState<Partial<Room>>(room);
-  const { users } = useCatalogStore(
-    useShallow((state) => ({
-      users: state.data.users,
-    }))
-  );
+export const RoleEditor = ({ role, onCancel, onSave }: Props) => {
+  const [editor, setEditor] = useState<Partial<Role>>(role);
 
   return (
     <Dialog
@@ -49,9 +36,9 @@ export const RoomEditor = ({ room, onCancel, onSave }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{room.id ? 'Edit Room' : 'Add New Room'}</DialogTitle>
+          <DialogTitle>{role.id ? 'Edit Role' : 'Add New Role'}</DialogTitle>
           <DialogDescription>
-            Enter the details of the department here.
+            Enter the details of the role here.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -67,24 +54,41 @@ export const RoomEditor = ({ room, onCancel, onSave }: Props) => {
               onChange={(e) => setEditor({ ...editor, name: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="manager" className="text-right">
-              Leader
-            </Label>
-            <Select
-              onValueChange={(leader) => setEditor({ ...editor, leader })}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select leader" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(users).map(([userId, user]) => (
-                  <SelectItem key={userId} value={userId}>
-                    {user.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+          <div className="flex justify-around">
+            <div className="flex items-center space-x-1 col-span-1">
+              <Checkbox
+                id="dept-name"
+                className="col-span-3"
+                value={editor.name}
+                onCheckedChange={(e) => {
+                  if (e) {
+                    setEditor({ ...editor, isAdmin: true });
+                  } else {
+                    setEditor({ ...editor, isAdmin: false });
+                  }
+                }}
+              />
+              <Label htmlFor="dept-name" className="text-right">
+                Is Admin
+              </Label>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Checkbox
+                id="dept-name"
+                value={editor.name}
+                onCheckedChange={(e) => {
+                  if (e) {
+                    setEditor({ ...editor, isManager: true });
+                  } else {
+                    setEditor({ ...editor, isManager: false });
+                  }
+                }}
+              />
+              <Label htmlFor="dept-name" className="text-right">
+                Is Manager
+              </Label>
+            </div>
           </div>
         </div>
         <DialogFooter>
@@ -102,7 +106,7 @@ export const RoomEditor = ({ room, onCancel, onSave }: Props) => {
               onSave(editor);
             }}
           >
-            {room.id ? 'Save' : 'Add'}
+            {role.id ? 'Save' : 'Add'}
           </Button>
         </DialogFooter>
       </DialogContent>

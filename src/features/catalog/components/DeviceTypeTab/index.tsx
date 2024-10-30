@@ -1,4 +1,4 @@
-import { MoreHorizontal, Plus, Search } from 'lucide-react';
+import { MoreHorizontal, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -18,7 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -29,75 +28,60 @@ import {
 } from '@/components/ui/table';
 
 import { useCatalogStore } from '../../hooks';
-import { Room } from '../../type';
-import { RoomEditor } from './RoomEditor';
+import { DeviceType } from '../../type';
+import { TypeEditor } from './TypeEditor';
 
-const RoomsTab = () => {
-  const { users, rooms, updateCatalog } = useCatalogStore(
+const DeviceTypeTab = () => {
+  const { deviceType, updateCatalog } = useCatalogStore(
     useShallow((state) => ({
-      users: state.data.users,
-      rooms: state.data.rooms,
+      deviceType: state.data.device.type,
       updateCatalog: state.updateCatalog,
     }))
   );
 
-  const [filter, setFilter] = useState('');
-  const [editor, setEditor] = useState<Partial<Room>>();
+  const [editor, setEditor] = useState<Partial<DeviceType>>();
 
-  const filteredRooms = Object.values(rooms).filter((room) =>
-    room.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
-  const handleSave = (type: Partial<Room>) => {
+  const handleSave = (type: Partial<DeviceType>) => {
     if (type.id) {
-      updateCatalog('edit', 'rooms', type);
+      updateCatalog('edit', 'device-type', type);
     } else {
-      updateCatalog('add', 'rooms', type);
+      updateCatalog('add', 'device-type', type);
     }
     setEditor(undefined);
   };
+
   return (
     <Card>
       {editor ? (
-        <RoomEditor
-          room={editor}
+        <TypeEditor
+          type={editor}
           onCancel={() => setEditor(undefined)}
           onSave={handleSave}
         />
       ) : null}
       <CardHeader>
-        <CardTitle>Room Management</CardTitle>
-        <CardDescription>View and manage company departments</CardDescription>
+        <CardTitle>Device Status Management</CardTitle>
+        <CardDescription>View and manage device status</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between items-center mb-4">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              type="search"
-              placeholder="Search departments..."
-              className="pl-8 w-[300px]"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            />
-          </div>
+        <div className="flex justify-end items-center mb-4">
           <Button onClick={() => setEditor({})}>
-            <Plus className="mr-2 h-4 w-4" /> Add Room
+            <Plus className="mr-2 h-4 w-4" /> Add Device Type
           </Button>
         </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Manager</TableHead>
+              <TableHead>Index</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRooms.map((room) => (
-              <TableRow key={room.id}>
-                <TableCell>{room.name}</TableCell>
-                <TableCell>{users[room.leader]?.name || room.leader}</TableCell>
+            {Object.entries(deviceType).map(([id, type], index) => (
+              <TableRow key={id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{type.name}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -108,15 +92,17 @@ const RoomsTab = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => setEditor(room)}>
-                        Edit Room
+                      <DropdownMenuItem onClick={() => setEditor(type)}>
+                        Edit Type
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-600"
-                        onClick={() => updateCatalog('delete', 'rooms', room)}
+                        onClick={() =>
+                          updateCatalog('delete', 'device-type', type)
+                        }
                       >
-                        Remove Room
+                        Remove Type
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -130,4 +116,4 @@ const RoomsTab = () => {
   );
 };
 
-export default RoomsTab;
+export default DeviceTypeTab;

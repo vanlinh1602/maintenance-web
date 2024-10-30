@@ -10,4 +10,6 @@ export type User = {
   roleId: string;
   roomId: string;
   avatar: string;
+  createdAt: Date;
+  updatedAt: Date;
 };

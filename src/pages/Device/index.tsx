@@ -54,9 +54,7 @@ export default function DevicePage() {
   );
 
   useEffect(() => {
-    if (!Object.keys(devices).length) {
-      getDevices();
-    }
+    getDevices();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -115,7 +113,7 @@ export default function DevicePage() {
             <CardHeader>
               <CardTitle>{device.name}</CardTitle>
               <CardDescription>
-                {deviceTypes[device.type]?.type}
+                {deviceTypes[device.type]?.name}
                 <div>
                   <span className="text-sm text-muted-foreground">Serial:</span>{' '}
                   {device.serial}
@@ -136,7 +134,7 @@ export default function DevicePage() {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <Badge>{deviceStatues[device.status]?.status}</Badge>
+                <Badge>{deviceStatues[device.status]?.name}</Badge>
                 <span className="text-sm text-muted-foreground">
                   Last Assign:{' '}
                   {moment(device.assignedDate).format('DD/MM/YYYY')}

@@ -8,12 +8,13 @@ export interface Request {
     timestamp: number;
   }[];
   status: string;
-  createdDate: number;
   completedDate?: number;
   creator: string;
   assignedTo?: string;
   deviceId: string;
   priority: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type RequestState = {

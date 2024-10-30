@@ -12,16 +12,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { DeviceStatus } from '../../type';
+import { RequestType } from '../../type';
 
 type Props = {
-  status: Partial<DeviceStatus>;
+  type: Partial<RequestType>;
   onCancel: () => void;
-  onSave: (status: Partial<DeviceStatus>) => void;
+  onSave: (type: Partial<RequestType>) => void;
 };
 
-export const StatusEditor = ({ status, onCancel, onSave }: Props) => {
-  const [editor, setEditor] = useState<Partial<DeviceStatus>>(status);
+export const TypeEditor = ({ type, onCancel, onSave }: Props) => {
+  const [editor, setEditor] = useState<Partial<RequestType>>(type);
 
   return (
     <Dialog
@@ -34,12 +34,14 @@ export const StatusEditor = ({ status, onCancel, onSave }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New DeviceStatus</DialogTitle>
+          <DialogTitle>
+            {type.id ? 'Edit RequestType' : 'Add New RequestType'}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
-              Status
+              Type
               <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -57,11 +59,12 @@ export const StatusEditor = ({ status, onCancel, onSave }: Props) => {
               if (!editor.name) {
                 toast({
                   title: 'Error',
-                  description: 'Please enter a valid status',
+                  description: 'Please enter a type name',
                   variant: 'destructive',
                 });
                 return;
               }
+
               onSave(editor);
             }}
           >

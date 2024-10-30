@@ -60,8 +60,8 @@ const DeviceStatusTab = () => {
         />
       ) : null}
       <CardHeader>
-        <CardTitle>Personnel Management</CardTitle>
-        <CardDescription>View and manage company personnel</CardDescription>
+        <CardTitle>Device Status Management</CardTitle>
+        <CardDescription>View and manage device status</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex justify-end items-center mb-4">
@@ -72,16 +72,16 @@ const DeviceStatusTab = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Id</TableHead>
+              <TableHead>Index</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Object.entries(deviceStatus).map(([id, status]) => (
+            {Object.entries(deviceStatus).map(([id, status], index) => (
               <TableRow key={id}>
-                <TableCell>{id}</TableCell>
-                <TableCell>{status.status}</TableCell>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{status.name}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

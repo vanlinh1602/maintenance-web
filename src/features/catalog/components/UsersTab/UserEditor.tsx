@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import { toast } from '@/components/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -30,9 +31,11 @@ type Props = {
 };
 
 export const UserEditor = ({ user, onCancel, onSave }: Props) => {
-  const { rooms } = useCatalogStore(
+  const { rooms, roles, users } = useCatalogStore(
     useShallow((state) => ({
       rooms: state.data.rooms,
+      roles: state.data.roles,
+      users: state.data.users,
     }))
   );
 
@@ -58,6 +61,7 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Name
+              <span className="text-red-500">*</span>
             </Label>
             <Input
               id="name"
@@ -69,6 +73,7 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="email" className="text-right">
               Email
+              <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
@@ -80,6 +85,7 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="department" className="text-right">
               Room
+              <span className="text-red-500">*</span>
             </Label>
             <Select
               onValueChange={(roomId) => setEditor({ ...editor, roomId })}
@@ -99,19 +105,49 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="position" className="text-right">
               Role
+              <span className="text-red-500">*</span>
             </Label>
-            <Input
-              id="position"
-              className="col-span-3"
-              value={editor.roleId}
-              onChange={(e) => setEditor({ ...editor, roleId: e.target.value })}
-            />
+            <Select
+              onValueChange={(roleId) => setEditor({ ...editor, roleId })}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select Role" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(roles).map(([roleId, role]) => (
+                  <SelectItem key={roleId} value={roleId}>
+                    {role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>
           <Button
             type="submit"
             onClick={() => {
+              if (
+                !editor.name ||
+                !editor.email ||
+                !editor.roomId ||
+                !editor.roleId
+              ) {
+                toast({
+                  title: 'Error',
+                  description: 'Please fill in all the required fields.',
+                  variant: 'destructive',
+                });
+                return;
+              }
+              if (Object.values(users).find((u) => u.email === editor.email)) {
+                toast({
+                  title: 'Error',
+                  description: 'User with this email already exists.',
+                  variant: 'destructive',
+                });
+                return;
+              }
               onSave(editor);
             }}
           >

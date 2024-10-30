@@ -1,4 +1,4 @@
-import { MoreHorizontal, Plus, Search } from 'lucide-react';
+import { Check, MoreHorizontal, Plus, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
@@ -29,45 +29,44 @@ import {
 } from '@/components/ui/table';
 
 import { useCatalogStore } from '../../hooks';
-import { Room } from '../../type';
-import { RoomEditor } from './RoomEditor';
+import { Role } from '../../type';
+import { RoleEditor } from './RoleEditor';
 
-const RoomsTab = () => {
-  const { users, rooms, updateCatalog } = useCatalogStore(
+const RolesTab = () => {
+  const { roles, updateCatalog } = useCatalogStore(
     useShallow((state) => ({
-      users: state.data.users,
-      rooms: state.data.rooms,
+      roles: state.data.roles,
       updateCatalog: state.updateCatalog,
     }))
   );
 
   const [filter, setFilter] = useState('');
-  const [editor, setEditor] = useState<Partial<Room>>();
+  const [editor, setEditor] = useState<Partial<Role>>();
 
-  const filteredRooms = Object.values(rooms).filter((room) =>
-    room.name.toLowerCase().includes(filter.toLowerCase())
+  const filteredRoles = Object.values(roles).filter((role) =>
+    role.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const handleSave = (type: Partial<Room>) => {
+  const handleSave = (type: Partial<Role>) => {
     if (type.id) {
-      updateCatalog('edit', 'rooms', type);
+      updateCatalog('edit', 'roles', type);
     } else {
-      updateCatalog('add', 'rooms', type);
+      updateCatalog('add', 'roles', type);
     }
     setEditor(undefined);
   };
   return (
     <Card>
       {editor ? (
-        <RoomEditor
-          room={editor}
+        <RoleEditor
+          role={editor}
           onCancel={() => setEditor(undefined)}
           onSave={handleSave}
         />
       ) : null}
       <CardHeader>
-        <CardTitle>Room Management</CardTitle>
-        <CardDescription>View and manage company departments</CardDescription>
+        <CardTitle>Role Management</CardTitle>
+        <CardDescription>View and manage role</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex justify-between items-center mb-4">
@@ -75,29 +74,45 @@ const RoomsTab = () => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               type="search"
-              placeholder="Search departments..."
+              placeholder="Search role..."
               className="pl-8 w-[300px]"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             />
           </div>
           <Button onClick={() => setEditor({})}>
-            <Plus className="mr-2 h-4 w-4" /> Add Room
+            <Plus className="mr-2 h-4 w-4" /> Add Role
           </Button>
         </div>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Manager</TableHead>
+              <TableHead>Index</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Is Admin</TableHead>
+              <TableHead>Is Manager</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRooms.map((room) => (
-              <TableRow key={room.id}>
-                <TableCell>{room.name}</TableCell>
-                <TableCell>{users[room.leader]?.name || room.leader}</TableCell>
+            {filteredRoles.map((role, index) => (
+              <TableRow key={role.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{role.name}</TableCell>
+                <TableCell>
+                  {role.isAdmin ? (
+                    <Check className="text-primary" />
+                  ) : (
+                    <X className="text-destructive" />
+                  )}
+                </TableCell>
+                <TableCell>
+                  {role.isManager ? (
+                    <Check className="text-primary" />
+                  ) : (
+                    <X className="text-destructive" />
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -108,15 +123,15 @@ const RoomsTab = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => setEditor(room)}>
-                        Edit Room
+                      <DropdownMenuItem onClick={() => setEditor(role)}>
+                        Edit Role
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-red-600"
-                        onClick={() => updateCatalog('delete', 'rooms', room)}
+                        onClick={() => updateCatalog('delete', 'roles', role)}
                       >
-                        Remove Room
+                        Remove Role
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -130,4 +145,4 @@ const RoomsTab = () => {
   );
 };
 
-export default RoomsTab;
+export default RolesTab;

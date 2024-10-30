@@ -48,9 +48,7 @@ export default function MaintenancePage() {
   );
 
   useEffect(() => {
-    if (!Object.keys(requests).length) {
-      getRequests();
-    }
+    getRequests();
     if (!Object.keys(devices).length) {
       getDevices();
     }
@@ -116,7 +114,7 @@ export default function MaintenancePage() {
                   {task.status.toUpperCase()}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
-                  Date create: {moment(task.createdDate).format('DD/MM/YYYY')}
+                  Date create: {moment(task.createdAt).format('DD/MM/YYYY')}
                 </span>
               </div>
             </CardContent>

@@ -23,7 +23,14 @@ export const getCatalog = async (): Promise<Catalog | null> => {
 
 export const updateCatalog = async (
   action: 'add' | 'edit' | 'delete',
-  type: 'users' | 'rooms' | 'device-status' | 'device-type',
+  type:
+    | 'users'
+    | 'rooms'
+    | 'roles'
+    | 'device-status'
+    | 'device-type'
+    | 'request-status'
+    | 'request-type',
   data: any
 ) => {
   try {

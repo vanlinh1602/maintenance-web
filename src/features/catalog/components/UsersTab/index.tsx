@@ -33,10 +33,11 @@ import { useCatalogStore } from '../../hooks';
 import { UserEditor } from './UserEditor';
 
 const UsersTab = () => {
-  const { users, rooms, updateCatalog } = useCatalogStore(
+  const { users, rooms, roles, updateCatalog } = useCatalogStore(
     useShallow((state) => ({
       users: state.data.users,
       rooms: state.data.rooms,
+      roles: state.data.roles,
       updateCatalog: state.updateCatalog,
     }))
   );
@@ -47,7 +48,6 @@ const UsersTab = () => {
   const filteredPersonnel = Object.values(users).filter((person) =>
     person.name.toLowerCase().includes(filter.toLowerCase())
   );
-  console.log('filteredPersonnel', filteredPersonnel);
 
   const handleSave = (type: Partial<User>) => {
     if (type.id) {
@@ -84,13 +84,14 @@ const UsersTab = () => {
             />
           </div>
           <Button onClick={() => setEditor({})}>
-            <Plus className="mr-2 h-4 w-4" /> Add Personnel
+            <Plus className="mr-2 h-4 w-4" /> Add User
           </Button>
         </div>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>Room</TableHead>
               <TableHead>Role</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -100,8 +101,11 @@ const UsersTab = () => {
             {filteredPersonnel.map((person) => (
               <TableRow key={person.id}>
                 <TableCell>{person.name}</TableCell>
+                <TableCell>{person.email}</TableCell>
                 <TableCell>{rooms[person.roomId]?.name}</TableCell>
-                <TableCell>{person.roleId}</TableCell>
+                <TableCell>
+                  {roles[person.roleId]?.name || person.roleId}
+                </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
