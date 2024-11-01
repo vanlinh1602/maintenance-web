@@ -1,6 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  DeviceStatusTab,
   DeviceTypeTab,
   RequestTypeTab,
   RolesTab,
@@ -21,7 +20,7 @@ export default function Catalog() {
             <TabsTrigger value="roles">Roles</TabsTrigger>
           </div>
           <div>
-            <TabsTrigger value="device-status">Device Status</TabsTrigger>
+            {/* <TabsTrigger value="device-status">Device Status</TabsTrigger> */}
             <TabsTrigger value="device-type">Device Type</TabsTrigger>
             {/* <TabsTrigger value="request-status">Request Status</TabsTrigger> */}
             <TabsTrigger value="request-type">Request Type</TabsTrigger>
@@ -36,13 +35,12 @@ export default function Catalog() {
         <TabsContent value="roles">
           <RolesTab />
         </TabsContent>
-        <TabsContent value="device-status">
+        {/* <TabsContent value="device-status">
           <DeviceStatusTab />
-        </TabsContent>
+        </TabsContent> */}
         <TabsContent value="device-type">
           <DeviceTypeTab />
         </TabsContent>
-
         {/* <TabsContent value="request-status">
           <RequestStatusTab />
         </TabsContent> */}

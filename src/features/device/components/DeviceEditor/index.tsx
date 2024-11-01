@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useCatalogStore } from '@/features/catalog/hooks';
+import { deviceStatuses } from '@/lib/options';
 
 import { useDeviceStore } from '../../hooks';
 import { Device } from '../../type';
@@ -46,9 +47,8 @@ const DeviceEditor = ({ device, onClose }: Props) => {
     }))
   );
 
-  const { statues, users, rooms, types } = useCatalogStore(
+  const { users, rooms, types } = useCatalogStore(
     useShallow((state) => ({
-      statues: state.data.device.status,
       rooms: state.data.rooms,
       users: state.data.users,
       types: state.data.device.type,
@@ -324,7 +324,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(statues).map(([statusKey, status]) => (
+                {Object.entries(deviceStatuses).map(([statusKey, status]) => (
                   <SelectItem key={statusKey} value={statusKey}>
                     {status.name}
                   </SelectItem>

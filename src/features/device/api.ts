@@ -6,11 +6,11 @@ import { Device } from './type';
 
 export const getDevices = async (): Promise<Device[]> => {
   try {
-    const result = await backendService.get<Device[]>('/devices/get/all');
+    const result = await backendService.get<Device[]>('/devices/get');
     if (result.kind === 'ok') {
       return result.data;
     }
-    throw result;
+    throw result.error;
   } catch (error) {
     toast({
       title: 'Error',
@@ -21,20 +21,22 @@ export const getDevices = async (): Promise<Device[]> => {
   }
 };
 
-export const getDevice = async (id: string): Promise<Device | null> => {
+export const getFilterDevice = async (
+  filter: Partial<Device>
+): Promise<Device[]> => {
   try {
-    const result = await backendService.get<Device>(`/devices/get/${id}`);
+    const result = await backendService.get<Device[]>('/devices/get', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
-    throw result;
+    throw result.error;
   } catch (error) {
     toast({
       title: 'Error',
       description: formatError(error),
       variant: 'destructive',
     });
-    return null;
+    return [];
   }
 };
 
@@ -48,7 +50,7 @@ export const createDevice = async (
     if (result.kind === 'ok') {
       return result.data;
     }
-    throw result;
+    throw result.error;
   } catch (error) {
     toast({
       title: 'Error',
@@ -71,7 +73,7 @@ export const updateDevice = async (
     if (result.kind === 'ok') {
       return result.data;
     }
-    throw result;
+    throw result.error;
   } catch (error) {
     toast({
       title: 'Error',
@@ -88,7 +90,7 @@ export const deleteDevice = async (id: string): Promise<boolean> => {
     if (result.kind === 'ok') {
       return true;
     }
-    throw result;
+    throw result.error;
   } catch (error) {
     toast({
       title: 'Error',

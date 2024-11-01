@@ -1,7 +1,7 @@
-import { Plus } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 
 import { Waiting } from '@/components';
@@ -14,13 +14,16 @@ import { useDeviceStore } from '@/features/device/hooks';
 import {
   AddRequestNote,
   EditRequestStatus,
+  ReplacementDevice,
   RequestAssign,
   ShecduledRequest,
 } from '@/features/request/components';
 import { useRequestStore } from '@/features/request/hooks';
+import { useUserStore } from '@/features/user/hooks';
 import { priorities, requestStatuses } from '@/lib/options';
 
 export default function MaintenanceDetailsPage() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
   const { handling, requests, getRequest, updateRequest } = useRequestStore(
@@ -32,10 +35,11 @@ export default function MaintenanceDetailsPage() {
     }))
   );
 
-  const { devices, getDevices } = useDeviceStore(
+  const { devices, getDevices, updateDevice } = useDeviceStore(
     useShallow((state) => ({
       devices: state.data,
       getDevices: state.getDevices,
+      updateDevice: state.updateDevice,
     }))
   );
 
@@ -44,6 +48,14 @@ export default function MaintenanceDetailsPage() {
       requestType: state.data.request.type,
       deviceType: state.data.device.type,
       users: state.data.users,
+    }))
+  );
+
+  const { userInfo, isMaintenance, isManager } = useUserStore(
+    useShallow((state) => ({
+      userInfo: state.info,
+      isMaintenance: state.isMaintenance,
+      isManager: state.isManager,
     }))
   );
 
@@ -66,6 +78,7 @@ export default function MaintenanceDetailsPage() {
   const [assignTo, setAssignTo] = useState(false);
   const [addNote, setAddNote] = useState(false);
   const [shecduledDate, setShecduledDate] = useState(false);
+  const [selectReplacement, setSelectReplacement] = useState(false);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -76,7 +89,7 @@ export default function MaintenanceDetailsPage() {
           onSubmit={(status, note) => {
             const notes = request.notes || [];
             notes.push({
-              userId: 'user-id',
+              userId: userInfo!.id,
               message: `Change status to ${
                 requestStatuses[status]?.name || status
               }${note ? `: ${note}` : ''}`,
@@ -93,7 +106,7 @@ export default function MaintenanceDetailsPage() {
           onSubmit={(user) => {
             const notes = request.notes || [];
             notes.push({
-              userId: 'user-id',
+              userId: userInfo!.id,
               message: `Assigned to ${users[user]?.name}`,
               timestamp: moment().valueOf(),
             });
@@ -108,7 +121,7 @@ export default function MaintenanceDetailsPage() {
           onSubmit={(note) => {
             const notes = request.notes || [];
             notes.push({
-              userId: 'user-id',
+              userId: userInfo!.id,
               message: note,
               timestamp: moment().valueOf(),
             });
@@ -123,7 +136,7 @@ export default function MaintenanceDetailsPage() {
           onSubmit={(date) => {
             const notes = request.notes || [];
             notes.push({
-              userId: 'user-id',
+              userId: userInfo!.id,
               message: `Scheduled maintenance on ${moment(date).format(
                 'MMMM DD, yyyy'
               )}`,
@@ -134,9 +147,32 @@ export default function MaintenanceDetailsPage() {
           }}
         />
       )}
+      {selectReplacement && (
+        <ReplacementDevice
+          currentDevice={id!}
+          onClose={() => setSelectReplacement(false)}
+          onSubmit={(deviceId) => {
+            const notes = request.notes || [];
+            notes.push({
+              userId: userInfo!.id,
+              message: `Replaced with ${devices[deviceId]?.name || deviceId}`,
+              timestamp: moment().valueOf(),
+            });
+            updateRequest(request.id, { replacementDeviceId: deviceId, notes });
+            updateDevice(deviceId, { employeeId: device.employeeId });
+            setSelectReplacement(false);
+          }}
+        />
+      )}
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h1 className="text-3xl font-bold">{device.name}</h1>
+          <Button
+            className="text-3xl font-bold p-0"
+            variant="link"
+            onClick={() => navigate(`/device/${device.id}`)}
+          >
+            {device.name}
+          </Button>
           <p className="text-xl text-muted-foreground">
             {deviceType[device.type]?.name}
           </p>
@@ -188,24 +224,49 @@ export default function MaintenanceDetailsPage() {
                   {requestStatuses[request.status]?.name}
                 </p>
               </div>
+              <div>
+                <Label className="flex">
+                  Replacement Device
+                  <Edit
+                    onClick={() => setSelectReplacement(true)}
+                    className="h-4 w-4 ml-2"
+                  />
+                </Label>
+                <Button
+                  variant="link"
+                  className="p-0 m-0"
+                  onClick={() =>
+                    navigate(`/device/${request.replacementDeviceId}`)
+                  }
+                >
+                  {devices[request.replacementDeviceId || '']?.name ||
+                    request.replacementDeviceId}
+                </Button>
+              </div>
             </div>
             <div>
               <Label>Description</Label>
               <p>{request.description}</p>
             </div>
             <div className="space-x-2">
-              <Button onClick={() => setUpdateStatus(true)}>
-                Update Maintenance Status
-              </Button>
-              <Button onClick={() => setAssignTo(true)} variant="secondary">
-                Assign To
-              </Button>
-              <Button
-                onClick={() => setShecduledDate(true)}
-                variant="secondary"
-              >
-                Schedule Maintenance
-              </Button>
+              {(isMaintenance && request.status !== 'pending') || isManager ? (
+                <Button onClick={() => setUpdateStatus(true)}>
+                  Update Status
+                </Button>
+              ) : null}
+              {isManager && (
+                <Button onClick={() => setAssignTo(true)} variant="secondary">
+                  Assign To
+                </Button>
+              )}
+              {isMaintenance && request.status !== 'pending' && (
+                <Button
+                  onClick={() => setShecduledDate(true)}
+                  variant="secondary"
+                >
+                  Schedule
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

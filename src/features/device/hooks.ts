@@ -5,8 +5,8 @@ import { devtools } from 'zustand/middleware';
 import {
   createDevice,
   deleteDevice,
-  getDevice,
   getDevices,
+  getFilterDevice,
   updateDevice,
 } from './api';
 import { Device, DeviceActions, DeviceState } from './type';
@@ -37,23 +37,26 @@ export const useDeviceStore = create<DeviceState & DeviceActions>()(
         { type: 'device/getDevices' }
       );
     },
-    getDevice: async (id) => {
-      set({ handling: true }, false, { type: 'device/getDevice' });
-      const data = await getDevice(id);
+    getFilterDevice: async (filter) => {
+      set({ handling: true }, false, { type: 'device/getFilterDevice' });
+      const data = await getFilterDevice(filter);
       if (data) {
         set(
           (state) => ({
             data: {
               ...state.data,
-              [data.id]: data,
+              ...data.reduce((acc, item) => {
+                acc[item.id] = item;
+                return acc;
+              }, {} as Record<string, Device>),
             },
             handling: false,
           }),
           false,
-          { type: 'device/getDevice' }
+          { type: 'device/getFilterDevice' }
         );
       } else {
-        set({ handling: false }, false, { type: 'device/getDevice' });
+        set({ handling: false }, false, { type: 'device/getFilterDevice' });
       }
     },
     createDevice: async (device) => {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
 
 import { toast } from '@/components/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useUserStore } from '@/features/user/hooks';
 import { requestStatuses } from '@/lib/options';
 
 type Props = {
@@ -29,6 +31,22 @@ type Props = {
 const EditRequestStatus = ({ onClose, onSubmit }: Props) => {
   const [status, setStatus] = useState('');
   const [notes, setNotes] = useState('');
+
+  const { isManager } = useUserStore(
+    useShallow((state) => ({
+      isMaintenance: state.isMaintenance,
+      isManager: state.isManager,
+    }))
+  );
+
+  const statusOptions = useMemo(() => {
+    if (isManager) {
+      return requestStatuses;
+    }
+    return Object.fromEntries(
+      Object.entries(requestStatuses).filter(([key]) => key !== 'approved')
+    );
+  }, [isManager]);
 
   const handleSubmit = () => {
     if (!status) {
@@ -67,7 +85,7 @@ const EditRequestStatus = ({ onClose, onSubmit }: Props) => {
                 <SelectValue placeholder="Select new status" />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(requestStatuses).map(([k, stats]) => (
+                {Object.entries(statusOptions).map(([k, stats]) => (
                   <SelectItem key={k} value={k} style={{ color: stats.color }}>
                     {stats.name}
                   </SelectItem>

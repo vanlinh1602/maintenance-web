@@ -58,9 +58,8 @@ export const RoleEditor = ({ role, onCancel, onSave }: Props) => {
           <div className="flex justify-around">
             <div className="flex items-center space-x-1 col-span-1">
               <Checkbox
-                id="dept-name"
                 className="col-span-3"
-                value={editor.name}
+                checked={editor.isAdmin}
                 onCheckedChange={(e) => {
                   if (e) {
                     setEditor({ ...editor, isAdmin: true });
@@ -75,8 +74,7 @@ export const RoleEditor = ({ role, onCancel, onSave }: Props) => {
             </div>
             <div className="flex items-center space-x-1">
               <Checkbox
-                id="dept-name"
-                value={editor.name}
+                checked={editor.isManager}
                 onCheckedChange={(e) => {
                   if (e) {
                     setEditor({ ...editor, isManager: true });
@@ -87,6 +85,21 @@ export const RoleEditor = ({ role, onCancel, onSave }: Props) => {
               />
               <Label htmlFor="dept-name" className="text-right">
                 Is Manager
+              </Label>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Checkbox
+                checked={editor.isMaintenance}
+                onCheckedChange={(e) => {
+                  if (e) {
+                    setEditor({ ...editor, isMaintenance: true });
+                  } else {
+                    setEditor({ ...editor, isMaintenance: false });
+                  }
+                }}
+              />
+              <Label htmlFor="dept-name" className="text-right">
+                Is Maintenance
               </Label>
             </div>
           </div>

@@ -52,7 +52,9 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Personnel</DialogTitle>
+          <DialogTitle>
+            {user.id ? 'Edit Employee' : 'Add New Employee'}
+          </DialogTitle>
           <DialogDescription>
             Enter the details of the new employee here.
           </DialogDescription>
@@ -88,6 +90,7 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
               <span className="text-red-500">*</span>
             </Label>
             <Select
+              value={editor.roomId}
               onValueChange={(roomId) => setEditor({ ...editor, roomId })}
             >
               <SelectTrigger className="col-span-3">
@@ -108,6 +111,7 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
               <span className="text-red-500">*</span>
             </Label>
             <Select
+              value={editor.roleId}
               onValueChange={(roleId) => setEditor({ ...editor, roleId })}
             >
               <SelectTrigger className="col-span-3">
@@ -140,7 +144,11 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
                 });
                 return;
               }
-              if (Object.values(users).find((u) => u.email === editor.email)) {
+              if (
+                Object.values(users).find(
+                  (u) => u.id !== editor.id && u.email === editor.email
+                )
+              ) {
                 toast({
                   title: 'Error',
                   description: 'User with this email already exists.',
@@ -151,7 +159,7 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
               onSave(editor);
             }}
           >
-            Add Employee
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

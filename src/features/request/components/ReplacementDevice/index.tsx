@@ -19,38 +19,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useCatalogStore } from '@/features/catalog/hooks';
+import { useDeviceStore } from '@/features/device/hooks';
 
 type Props = {
+  currentDevice: string;
   onClose: () => void;
   onSubmit: (user: string) => void;
 };
 
-const RequestAssign = ({ onClose, onSubmit }: Props) => {
-  const { users, roles } = useCatalogStore(
+const ReplacementDevice = ({ onClose, onSubmit, currentDevice }: Props) => {
+  const { devices } = useDeviceStore(
     useShallow((state) => ({
-      users: state.data.users,
-      roles: state.data.roles,
+      devices: state.data,
     }))
   );
-  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedDevice, setSelectedDevice] = useState('');
 
-  const filteredUsers = useMemo(() => {
-    return Object.values(users).filter((user) => {
-      return roles[user.roleId].isMaintenance;
+  const filteredDevice = useMemo(() => {
+    return Object.values(devices).filter((device) => {
+      if (device.id === currentDevice) {
+        return false;
+      }
+      if (device.employeeId) {
+        return false;
+      }
+      return true;
     });
-  }, [users, roles]);
+  }, [devices, currentDevice]);
 
   const handleSubmit = () => {
-    if (!selectedUser) {
+    if (!selectedDevice) {
       toast({
-        title: 'User is required',
+        title: 'Device is required',
         variant: 'destructive',
       });
       return;
     }
-    onSubmit(selectedUser);
+    onSubmit(selectedDevice);
   };
+
   return (
     <Dialog
       open
@@ -62,28 +69,28 @@ const RequestAssign = ({ onClose, onSubmit }: Props) => {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Assign</DialogTitle>
+          <DialogTitle>Replacement Device</DialogTitle>
           <DialogDescription>
-            Assign this maintenance task to a user.
+            Please select a device to replace the current device.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="status" className="text-right">
-              Assign to
+              Device
               <span className="text-red-500">*</span>
             </Label>
             <Select
-              onValueChange={(value) => setSelectedUser(value)}
-              value={selectedUser}
+              onValueChange={(value) => setSelectedDevice(value)}
+              value={selectedDevice}
             >
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select user" />
               </SelectTrigger>
               <SelectContent>
-                {filteredUsers.map((user) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {user.name}
+                {filteredDevice.map((device) => (
+                  <SelectItem key={device.id} value={device.id}>
+                    {device.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -92,7 +99,7 @@ const RequestAssign = ({ onClose, onSubmit }: Props) => {
         </div>
         <DialogFooter>
           <Button type="submit" onClick={handleSubmit}>
-            Update
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -100,4 +107,4 @@ const RequestAssign = ({ onClose, onSubmit }: Props) => {
   );
 };
 
-export default RequestAssign;
+export default ReplacementDevice;

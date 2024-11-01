@@ -2,11 +2,13 @@ import { toast } from '@/components/hooks/use-toast';
 import { backendService } from '@/services';
 import formatError from '@/utils/formatError';
 
-import { Request } from './type';
+import { Liquidation } from './type';
 
-export const getRequests = async (): Promise<Request[]> => {
+export const getLiquidations = async (): Promise<Liquidation[]> => {
   try {
-    const result = await backendService.get<Request[]>('/requests/get/all');
+    const result = await backendService.get<Liquidation[]>(
+      '/liquidation/get/all'
+    );
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -21,9 +23,13 @@ export const getRequests = async (): Promise<Request[]> => {
   }
 };
 
-export const getRequest = async (id: string): Promise<Request | null> => {
+export const getLiquidation = async (
+  id: string
+): Promise<Liquidation | null> => {
   try {
-    const result = await backendService.get<Request>(`/requests/get/${id}`);
+    const result = await backendService.get<Liquidation>(
+      `/liquidation/get/${id}`
+    );
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -38,12 +44,12 @@ export const getRequest = async (id: string): Promise<Request | null> => {
   }
 };
 
-export const getRequestByFilter = async (
-  filter: Partial<Request>
-): Promise<Request[]> => {
+export const getLiquidationByFilter = async (
+  filter: Partial<Liquidation>
+): Promise<Liquidation[]> => {
   try {
-    const result = await backendService.post<Request[]>(
-      '/requests/get',
+    const result = await backendService.post<Liquidation[]>(
+      '/liquidation/get',
       filter
     );
     if (result.kind === 'ok') {
@@ -60,13 +66,16 @@ export const getRequestByFilter = async (
   }
 };
 
-export const createRequest = async (
-  request: Partial<Request>
-): Promise<Request | null> => {
+export const createLiquidation = async (
+  liquidation: Partial<Liquidation>
+): Promise<Liquidation | null> => {
   try {
-    const result = await backendService.post<Request>('/requests/create', {
-      request,
-    });
+    const result = await backendService.post<Liquidation>(
+      '/liquidation/create',
+      {
+        liquidation,
+      }
+    );
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -81,15 +90,18 @@ export const createRequest = async (
   }
 };
 
-export const updateRequest = async (
+export const updateLiquidation = async (
   id: string,
-  request: Partial<Request>
-): Promise<Request | null> => {
+  liquidation: Partial<Liquidation>
+): Promise<Liquidation | null> => {
   try {
-    const result = await backendService.post<Request>('/requests/update', {
-      id,
-      request,
-    });
+    const result = await backendService.post<Liquidation>(
+      '/liquidation/update',
+      {
+        id,
+        liquidation,
+      }
+    );
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -104,9 +116,9 @@ export const updateRequest = async (
   }
 };
 
-export const deleteRequest = async (id: string): Promise<boolean> => {
+export const deleteLiquidation = async (id: string): Promise<boolean> => {
   try {
-    const result = await backendService.post('/requests/delete', { id });
+    const result = await backendService.post('/liquidation/delete', { id });
     if (result.kind === 'ok') {
       return true;
     }

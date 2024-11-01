@@ -13,6 +13,7 @@ export interface Request {
   creator: string;
   assignedTo?: string;
   deviceId: string;
+  replacementDeviceId?: string;
   priority: string;
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +27,7 @@ export type RequestState = {
 export type RequestActions = {
   getRequests: () => Promise<void>;
   getRequest: (id: string) => Promise<void>;
+  getRequestByFilter: (filter: Partial<Request>) => Promise<void>;
   createRequest: (request: Partial<Request>) => Promise<Request | null>;
   updateRequest: (id: string, request: Partial<Request>) => Promise<void>;
   deleteRequest: (id: string) => Promise<void>;

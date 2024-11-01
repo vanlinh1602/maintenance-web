@@ -13,3 +13,16 @@ export type User = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type UserState = {
+  handling: boolean;
+  info?: User;
+  isAdmin?: boolean;
+  isManager?: boolean;
+  isMaintenance?: boolean;
+};
+
+export type UserActions = {
+  login(): Promise<void>;
+  signOut(): Promise<void>;
+};

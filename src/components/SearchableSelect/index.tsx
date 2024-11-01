@@ -20,7 +20,9 @@ type Props = {
   options: { value: string; label: string }[];
   onSelect: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
   value?: string;
+  className?: string;
 };
 
 export default function SearchableSelect({
@@ -28,6 +30,8 @@ export default function SearchableSelect({
   onSelect,
   placeholder,
   value,
+  disabled,
+  className,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [selectValue, setSelectValue] = useState<{
@@ -49,7 +53,7 @@ export default function SearchableSelect({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild disabled={disabled} className={className}>
         <Button
           variant="outline"
           role="combobox"

@@ -91,6 +91,7 @@ const RolesTab = () => {
               <TableHead>Role</TableHead>
               <TableHead>Is Admin</TableHead>
               <TableHead>Is Manager</TableHead>
+              <TableHead>Is Maintenance</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -108,6 +109,13 @@ const RolesTab = () => {
                 </TableCell>
                 <TableCell>
                   {role.isManager ? (
+                    <Check className="text-primary" />
+                  ) : (
+                    <X className="text-destructive" />
+                  )}
+                </TableCell>
+                <TableCell>
+                  {role.isMaintenance ? (
                     <Check className="text-primary" />
                   ) : (
                     <X className="text-destructive" />

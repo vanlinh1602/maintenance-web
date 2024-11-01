@@ -13,6 +13,7 @@ export type Role = {
   name: string;
   isAdmin: boolean;
   isManager: boolean;
+  isMaintenance: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

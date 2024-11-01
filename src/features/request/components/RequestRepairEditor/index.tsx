@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCatalogStore } from '@/features/catalog/hooks';
 import { Device } from '@/features/device/type';
 import { Request } from '@/features/request/type';
+import { useUserStore } from '@/features/user/hooks';
 import { priorities } from '@/lib/options';
 
 import { useRequestStore } from '../../hooks';
@@ -51,6 +52,12 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
     }))
   );
 
+  const { userInfo } = useUserStore(
+    useShallow((state) => ({
+      userInfo: state.info,
+    }))
+  );
+
   const [editor, setEditor] = useState({
     description: '',
     priority: '',
@@ -70,10 +77,9 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
       ...request,
       ...editor,
       deviceId: device.id,
-      creator: 'user-id',
+      creator: userInfo!.id,
       status: 'pending',
     };
-
     if (request) {
       updateRequest(request.id, dataUpdate);
       onClose();

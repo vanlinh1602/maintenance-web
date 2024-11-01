@@ -21,7 +21,7 @@ export type DeviceState = {
 
 export type DeviceActions = {
   getDevices: () => void;
-  getDevice: (id: string) => void;
+  getFilterDevice: (filter: Partial<Device>) => void;
   createDevice: (device: Partial<Device>) => void;
   updateDevice: (id: string, device: Partial<Device>) => void;
   deleteDevice: (id: string) => void;

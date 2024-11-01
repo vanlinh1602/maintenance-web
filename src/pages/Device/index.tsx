@@ -29,6 +29,8 @@ import { DeviceEditor } from '@/features/device/components';
 import { useDeviceStore } from '@/features/device/hooks';
 import { Device } from '@/features/device/type';
 import { RequestRepair } from '@/features/request/components';
+import { useUserStore } from '@/features/user/hooks';
+import { deviceStatuses } from '@/lib/options';
 
 // Mock data for device
 
@@ -44,12 +46,17 @@ export default function DevicePage() {
     }))
   );
 
-  const { deviceStatues, users, rooms, deviceTypes } = useCatalogStore(
+  const { users, rooms, deviceTypes } = useCatalogStore(
     useShallow((state) => ({
-      deviceStatues: state.data.device.status,
       rooms: state.data.rooms,
       users: state.data.users,
       deviceTypes: state.data.device.type,
+    }))
+  );
+
+  const { isMaintenance } = useUserStore(
+    useShallow((state) => ({
+      isMaintenance: state.isMaintenance,
     }))
   );
 
@@ -83,9 +90,11 @@ export default function DevicePage() {
       ) : null}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Device Management</h1>
-        <Button onClick={() => setDeviceEdit({})}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Device
-        </Button>
+        {isMaintenance ? (
+          <Button onClick={() => setDeviceEdit({})}>
+            <Plus className="mr-2 h-4 w-4" /> Add New Device
+          </Button>
+        ) : null}
       </div>
 
       <div className="flex justify-between items-center mb-4">
@@ -134,7 +143,13 @@ export default function DevicePage() {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <Badge>{deviceStatues[device.status]?.name}</Badge>
+                <Badge
+                  style={{
+                    backgroundColor: deviceStatuses[device.status]?.color,
+                  }}
+                >
+                  {deviceStatuses[device.status]?.name}
+                </Badge>
                 <span className="text-sm text-muted-foreground">
                   Last Assign:{' '}
                   {moment(device.assignedDate).format('DD/MM/YYYY')}
@@ -156,19 +171,25 @@ export default function DevicePage() {
                   >
                     View Details
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => setDeviceEdit(device)}>
-                    Edit Device
-                  </DropdownMenuItem>
+                  {isMaintenance ? (
+                    <DropdownMenuItem onSelect={() => setDeviceEdit(device)}>
+                      Edit Device
+                    </DropdownMenuItem>
+                  ) : null}
                   <DropdownMenuItem onSelect={() => setRepairDevice(device)}>
                     Request Repair
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-red-600"
-                    onSelect={() => deleteDevice(device.id)}
-                  >
-                    Delete Device
-                  </DropdownMenuItem>
+                  {isMaintenance ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onSelect={() => deleteDevice(device.id)}
+                      >
+                        Delete Device
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardFooter>

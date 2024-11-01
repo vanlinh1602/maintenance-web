@@ -45,3 +45,51 @@ export const requestStatuses: CustomObject<{
     color: 'green',
   },
 };
+
+export const deviceStatuses: CustomObject<{
+  name: string;
+  color: string;
+}> = {
+  active: {
+    name: 'Active',
+    color: 'green',
+  },
+  inactive: {
+    name: 'Inactive',
+    color: 'red',
+  },
+  damaged: {
+    name: 'Damaged',
+    color: 'red',
+  },
+  repair: {
+    name: 'Repair',
+    color: 'orange',
+  },
+  liquidation: {
+    name: 'For Liquidation',
+    color: 'purple',
+  },
+};
+
+export const liquidationStautses: CustomObject<{
+  name: string;
+  color: string;
+}> = {
+  pending: {
+    name: 'Pending',
+    color: 'gray',
+  },
+  approved: {
+    name: 'Approved',
+    color: 'green',
+  },
+  rejected: {
+    name: 'Rejected',
+    color: 'red',
+  },
+  completed: {
+    name: 'Completed',
+    color: 'green',
+  },
+};

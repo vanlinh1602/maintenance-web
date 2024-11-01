@@ -6,6 +6,7 @@ import {
   createRequest,
   deleteRequest,
   getRequest,
+  getRequestByFilter,
   getRequests,
   updateRequest,
 } from './api';
@@ -54,6 +55,28 @@ export const useRequestStore = create<RequestState & RequestActions>()(
         );
       } else {
         set({ handling: false }, false, { type: 'request/getRequest' });
+      }
+    },
+    getRequestByFilter: async (filter) => {
+      set({ handling: true }, false, { type: 'request/getRequestByFilter' });
+      const data = await getRequestByFilter(filter);
+      if (data) {
+        set(
+          (state) => ({
+            data: {
+              ...state.data,
+              ...data.reduce((acc, item) => {
+                acc[item.id] = item;
+                return acc;
+              }, {} as Record<string, Request>),
+            },
+            handling: false,
+          }),
+          false,
+          { type: 'request/getRequestByFilter' }
+        );
+      } else {
+        set({ handling: false }, false, { type: 'request/getRequestByFilter' });
       }
     },
     createRequest: async (request) => {
