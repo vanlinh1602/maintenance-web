@@ -6,7 +6,7 @@ import { Request } from './type';
 
 export const getRequests = async (): Promise<Request[]> => {
   try {
-    const result = await backendService.get<Request[]>('/requests/get/all');
+    const result = await backendService.get<Request[]>('/requests/get');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -18,23 +18,6 @@ export const getRequests = async (): Promise<Request[]> => {
       variant: 'destructive',
     });
     return [];
-  }
-};
-
-export const getRequest = async (id: string): Promise<Request | null> => {
-  try {
-    const result = await backendService.get<Request>(`/requests/get/${id}`);
-    if (result.kind === 'ok') {
-      return result.data;
-    }
-    throw result.error;
-  } catch (error) {
-    toast({
-      title: 'Error',
-      description: formatError(error),
-      variant: 'destructive',
-    });
-    return null;
   }
 };
 

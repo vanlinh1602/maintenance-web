@@ -5,7 +5,6 @@ import { devtools } from 'zustand/middleware';
 import {
   createRequest,
   deleteRequest,
-  getRequest,
   getRequestByFilter,
   getRequests,
   updateRequest,
@@ -40,13 +39,14 @@ export const useRequestStore = create<RequestState & RequestActions>()(
     },
     getRequest: async (id) => {
       set({ handling: true }, false, { type: 'request/getRequest' });
-      const data = await getRequest(id);
+      const data = await getRequestByFilter({ id });
       if (data) {
+        const request = data[0];
         set(
           (state) => ({
             data: {
               ...state.data,
-              [data.id]: data,
+              [request.id]: request,
             },
             handling: false,
           }),

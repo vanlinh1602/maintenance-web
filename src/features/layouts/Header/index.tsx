@@ -31,10 +31,13 @@ export const Header = () => {
     return key || 'home';
   }, [location.pathname]);
 
-  const { userInfo, signOut } = useUserStore(
+  const { userInfo, signOut, isAdmin, isManager, isMaintenance } = useUserStore(
     useShallow((state) => ({
       userInfo: state.info,
       signOut: state.signOut,
+      isManager: state.isManager,
+      isAdmin: state.isAdmin,
+      isMaintenance: state.isMaintenance,
     }))
   );
 
@@ -47,19 +50,21 @@ export const Header = () => {
       <Button
         variant="link"
         className="flex items-center justify-center"
-        onClick={() => navigate('/')}
+        onClick={() => navigate(isManager ? '/' : '/device')}
       >
         Device Management
       </Button>
       <nav className="ml-auto flex gap-4 sm:gap-6">
-        <Button
-          variant="link"
-          className="text-sm font-medium hover:underline underline-offset-4"
-          onClick={() => navigate('/')}
-        >
-          <LayoutDashboard className="h-4 w-4" />
-          Dashboard
-        </Button>
+        {isManager && (
+          <Button
+            variant="link"
+            className="text-sm font-medium hover:underline underline-offset-4"
+            onClick={() => navigate('/')}
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
+          </Button>
+        )}
         <Button
           variant="link"
           className="text-sm font-medium hover:underline underline-offset-4"
@@ -76,22 +81,26 @@ export const Header = () => {
           <ListTodo className="h-4 w-4" />
           Request
         </Button>
-        <Button
-          variant="link"
-          className="text-sm font-medium hover:underline underline-offset-4"
-          onClick={() => navigate('/liquidation')}
-        >
-          <Receipt className="h-4 w-4" />
-          Liquidation
-        </Button>
-        <Button
-          variant="link"
-          className="text-sm font-medium hover:underline underline-offset-4"
-          onClick={() => navigate('/catalog')}
-        >
-          <GitFork className="h-4 w-4" />
-          Catalog
-        </Button>
+        {isManager || isMaintenance ? (
+          <Button
+            variant="link"
+            className="text-sm font-medium hover:underline underline-offset-4"
+            onClick={() => navigate('/liquidation')}
+          >
+            <Receipt className="h-4 w-4" />
+            Liquidation
+          </Button>
+        ) : null}
+        {isAdmin && (
+          <Button
+            variant="link"
+            className="text-sm font-medium hover:underline underline-offset-4"
+            onClick={() => navigate('/catalog')}
+          >
+            <GitFork className="h-4 w-4" />
+            Catalog
+          </Button>
+        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

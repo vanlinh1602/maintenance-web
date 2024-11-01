@@ -7,7 +7,11 @@ import {
   MonitorSmartphone,
   Settings,
 } from 'lucide-react';
+import moment from 'moment';
+import { useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { useShallow } from 'zustand/shallow';
 
 import {
   Card,
@@ -21,6 +25,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { useCatalogStore } from '@/features/catalog/hooks';
+import { useDeviceStore } from '@/features/device/hooks';
+import { useLiquidationStore } from '@/features/liquidation/hooks';
+import { useRequestStore } from '@/features/request/hooks';
+import { Request } from '@/features/request/type';
+import { useUserStore } from '@/features/user/hooks';
 
 const equipmentPerformance = [
   { name: 'Jan', efficiency: 65 },
@@ -32,7 +42,128 @@ const equipmentPerformance = [
   { name: 'Jul', efficiency: 40 },
 ];
 
+const renderTasks = (request: Request, title: string) => {
+  switch (request.status) {
+    case 'inProgress':
+    case 'approved':
+      return (
+        <div className="flex items-center">
+          <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
+          <div className="ml-4 space-y-1">
+            <p className="text-sm font-medium leading-none">{title}</p>
+            <p className="text-sm text-muted-foreground">In Progress</p>
+          </div>
+          <div className="ml-auto font-medium text-blue-500">In Progress</div>
+        </div>
+      );
+    case 'pending':
+      return (
+        <div className="flex items-center">
+          <CalendarDays className="mr-2 h-4 w-4 text-yellow-500" />
+          <div className="ml-4 space-y-1">
+            <p className="text-sm font-medium leading-none">{title}</p>
+            <p className="text-sm text-muted-foreground">
+              Scheduled for:{' '}
+              {moment(request.scheduledDate || undefined).format('DD MMM YYYY')}
+            </p>
+          </div>
+          <div className="ml-auto font-medium text-yellow-500">Pending</div>
+        </div>
+      );
+    case 'completed':
+      return (
+        <div className="flex items-center">
+          <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
+          <div className="ml-4 space-y-1">
+            <p className="text-sm font-medium leading-none">{title}</p>
+            <p className="text-sm text-muted-foreground">
+              Completed on:{' '}
+              {moment(request.completedDate).format('DD MMM YYYY')}
+            </p>
+          </div>
+          <div className="ml-auto font-medium text-green-500">Completed</div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
+
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { isManager } = useUserStore(
+    useShallow((state) => ({
+      isManager: state.isManager,
+    }))
+  );
+
+  const { devices, getDevices } = useDeviceStore(
+    useShallow((state) => ({
+      devices: state.data,
+      getDevices: state.getDevices,
+    }))
+  );
+
+  const { requests, getRequests } = useRequestStore(
+    useShallow((state) => ({
+      requests: state.data,
+      getRequests: state.getRequests,
+    }))
+  );
+
+  const { liquidations, getLiquidations } = useLiquidationStore(
+    useShallow((state) => ({
+      liquidations: state.data,
+      getLiquidations: state.getLiquidations,
+    }))
+  );
+
+  const { requestTypes } = useCatalogStore(
+    useShallow((state) => ({
+      requestTypes: state.data.request.type,
+    }))
+  );
+
+  useEffect(() => {
+    if (!isManager) {
+      navigate('/device');
+    } else {
+      getDevices();
+      getRequests();
+      getLiquidations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const data = useMemo(() => {
+    const totalDevice = Object.values(devices).length;
+    const activeDevice = Object.values(devices).filter(
+      (device) => device.status === 'active'
+    ).length;
+    const requsetsStatus = Object.values(requests).filter(
+      (request) => request.status === 'approved'
+    ).length;
+
+    const liquidationStatus = Object.values(liquidations).filter(
+      (liquidation) => liquidation.status === 'approved'
+    ).length;
+
+    return {
+      totalDevice,
+      activeDevice,
+      requsetsStatus,
+      liquidationStatus,
+    };
+  }, [devices, liquidations, requests]);
+
+  const requestList = useMemo(() => {
+    const sortedRequests = Object.values(requests).sort(
+      (a, b) => moment(b.updatedAt).unix() - moment(a.updatedAt).unix()
+    );
+    return sortedRequests.slice(0, 3);
+  }, [requests]);
+  console.log('requestList', requestList);
+
   return (
     <div className="flex bg-gray-100 dark:bg-gray-900">
       <main className="container mx-auto px-4 py-8">
@@ -45,21 +176,24 @@ export default function Dashboard() {
               <MonitorSmartphone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">245</div>
+              <div className="text-2xl font-bold">{data.totalDevice}</div>
               <p className="text-xs text-muted-foreground">
-                +3 from last month
+                Total equipment in the system
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Operational</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Active Device
+              </CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">208</div>
+              <div className="text-2xl font-bold">{data.activeDevice}</div>
               <p className="text-xs text-muted-foreground">
-                85% of total equipment
+                {Math.round((data.activeDevice * 100) / data.totalDevice)}% of
+                total equipment
               </p>
             </CardContent>
           </Card>
@@ -71,21 +205,23 @@ export default function Dashboard() {
               <Construction className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">25</div>
+              <div className="text-2xl font-bold">{data.requsetsStatus}</div>
               <p className="text-xs text-muted-foreground">
-                10% of total equipment
+                {Math.round((data.requsetsStatus * 100) / data.totalDevice)}% of
+                total equipment
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">In Repair</CardTitle>
+              <CardTitle className="text-sm font-medium">Liquidation</CardTitle>
               <Settings className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">{data.liquidationStatus}</div>
               <p className="text-xs text-muted-foreground">
-                5% of total equipment
+                {Math.round((data.liquidationStatus * 100) / data.totalDevice)}%
+                of total equipment
               </p>
             </CardContent>
           </Card>
@@ -142,46 +278,14 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-8">
-                <div className="flex items-center">
-                  <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Forklift Annual Service
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Completed on: 15 Oct 2023
-                    </p>
-                  </div>
-                  <div className="ml-auto font-medium text-green-500">
-                    Complete
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <CalendarDays className="mr-2 h-4 w-4 text-yellow-500" />
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      CNC Machine Calibration
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Scheduled for: 22 Oct 2023
-                    </p>
-                  </div>
-                  <div className="ml-auto font-medium text-yellow-500">
-                    Pending
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      Conveyor Belt Replacement
-                    </p>
-                    <p className="text-sm text-muted-foreground">In Progress</p>
-                  </div>
-                  <div className="ml-auto font-medium text-blue-500">
-                    In Progress
-                  </div>
-                </div>
+                {requestList.map((request) => {
+                  const title = `${requestTypes[request.type]?.name} - ${
+                    devices[request.deviceId]?.name
+                  }`;
+                  return (
+                    <div key={request.id}>{renderTasks(request, title)}</div>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
