@@ -4,7 +4,7 @@
   "version": "0.0.4",
   "type": "module",
   "scripts": {
-    "dev": "REACT_APP_STAGE=development vite",
+    "dev": "SET REACT_APP_STAGE=development&&vite",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "build": "tsc -b && vite build",
