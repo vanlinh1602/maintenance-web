@@ -84,6 +84,30 @@ export default class Api {
     return getApiProblem(response);
   };
 
+  put = async <T>(
+    path: string,
+    params?: any
+  ): Promise<{ kind: 'ok'; data: T } | ApiProblems> => {
+    const response: ApiResponse<any> = await this.api.put(path, params);
+
+    if (response.ok) {
+      return { kind: 'ok', data: response.data };
+    }
+    return getApiProblem(response);
+  };
+
+  delete = async <T>(
+    path: string,
+    params?: any
+  ): Promise<{ kind: 'ok'; data: T } | ApiProblems> => {
+    const response: ApiResponse<any> = await this.api.delete(path, params);
+
+    if (response.ok) {
+      return { kind: 'ok', data: response.data };
+    }
+    return getApiProblem(response);
+  };
+
   download = async (
     path: string,
     params?: any

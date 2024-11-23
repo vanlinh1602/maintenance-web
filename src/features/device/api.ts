@@ -6,7 +6,7 @@ import { Device } from './type';
 
 export const getDevices = async (): Promise<Device[]> => {
   try {
-    const result = await backendService.get<Device[]>('/devices/get');
+    const result = await backendService.get<Device[]>('/devices');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -25,7 +25,7 @@ export const getFilterDevice = async (
   filter: Partial<Device>
 ): Promise<Device[]> => {
   try {
-    const result = await backendService.get<Device[]>('/devices/get', filter);
+    const result = await backendService.get<Device[]>('/devices', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -44,7 +44,7 @@ export const createDevice = async (
   device: Partial<Device>
 ): Promise<Device | null> => {
   try {
-    const result = await backendService.post<Device>('/devices/create', {
+    const result = await backendService.post<Device>('/devices', {
       device,
     });
     if (result.kind === 'ok') {
@@ -66,7 +66,7 @@ export const updateDevice = async (
   device: Partial<Device>
 ): Promise<Device | null> => {
   try {
-    const result = await backendService.post<Device>('/devices/update', {
+    const result = await backendService.put<Device>('/devices', {
       id,
       device,
     });
@@ -86,7 +86,7 @@ export const updateDevice = async (
 
 export const deleteDevice = async (id: string): Promise<boolean> => {
   try {
-    const result = await backendService.post('/devices/delete', { id });
+    const result = await backendService.delete('/devices', { id });
     if (result.kind === 'ok') {
       return true;
     }

@@ -6,9 +6,7 @@ import { Liquidation } from './type';
 
 export const getLiquidations = async (): Promise<Liquidation[]> => {
   try {
-    const result = await backendService.get<Liquidation[]>(
-      '/liquidation/get/all'
-    );
+    const result = await backendService.get<Liquidation[]>('/liquidation');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -27,11 +25,11 @@ export const getLiquidation = async (
   id: string
 ): Promise<Liquidation | null> => {
   try {
-    const result = await backendService.get<Liquidation>(
-      `/liquidation/get/${id}`
-    );
+    const result = await backendService.get<Liquidation[]>('/liquidation', {
+      id,
+    });
     if (result.kind === 'ok') {
-      return result.data;
+      return result.data?.[0];
     }
     throw result.error;
   } catch (error) {
@@ -48,8 +46,8 @@ export const getLiquidationByFilter = async (
   filter: Partial<Liquidation>
 ): Promise<Liquidation[]> => {
   try {
-    const result = await backendService.post<Liquidation[]>(
-      '/liquidation/get',
+    const result = await backendService.get<Liquidation[]>(
+      '/liquidation',
       filter
     );
     if (result.kind === 'ok') {
@@ -70,12 +68,9 @@ export const createLiquidation = async (
   liquidation: Partial<Liquidation>
 ): Promise<Liquidation | null> => {
   try {
-    const result = await backendService.post<Liquidation>(
-      '/liquidation/create',
-      {
-        liquidation,
-      }
-    );
+    const result = await backendService.post<Liquidation>('/liquidation', {
+      liquidation,
+    });
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -95,13 +90,10 @@ export const updateLiquidation = async (
   liquidation: Partial<Liquidation>
 ): Promise<Liquidation | null> => {
   try {
-    const result = await backendService.post<Liquidation>(
-      '/liquidation/update',
-      {
-        id,
-        liquidation,
-      }
-    );
+    const result = await backendService.put<Liquidation>('/liquidation', {
+      id,
+      liquidation,
+    });
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -118,7 +110,7 @@ export const updateLiquidation = async (
 
 export const deleteLiquidation = async (id: string): Promise<boolean> => {
   try {
-    const result = await backendService.post('/liquidation/delete', { id });
+    const result = await backendService.delete('/liquidation', { id });
     if (result.kind === 'ok') {
       return true;
     }

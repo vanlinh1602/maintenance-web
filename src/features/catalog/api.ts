@@ -6,7 +6,7 @@ import { Catalog } from './type';
 
 export const getCatalog = async (): Promise<Catalog | null> => {
   try {
-    const result = await backendService.get<Catalog>('/catalog/get');
+    const result = await backendService.get<Catalog>('/catalog');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -34,7 +34,7 @@ export const updateCatalog = async (
   data: any
 ) => {
   try {
-    const result = await backendService.post<any>('/catalog/update', {
+    const result = await backendService.put<any>('/catalog', {
       action,
       type,
       data,

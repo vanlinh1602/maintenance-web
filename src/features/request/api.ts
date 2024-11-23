@@ -6,7 +6,7 @@ import { Request } from './type';
 
 export const getRequests = async (): Promise<Request[]> => {
   try {
-    const result = await backendService.get<Request[]>('/requests/get');
+    const result = await backendService.get<Request[]>('/requests');
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -25,10 +25,7 @@ export const getRequestByFilter = async (
   filter: Partial<Request>
 ): Promise<Request[]> => {
   try {
-    const result = await backendService.post<Request[]>(
-      '/requests/get',
-      filter
-    );
+    const result = await backendService.get<Request[]>('/requests', filter);
     if (result.kind === 'ok') {
       return result.data;
     }
@@ -47,7 +44,7 @@ export const createRequest = async (
   request: Partial<Request>
 ): Promise<Request | null> => {
   try {
-    const result = await backendService.post<Request>('/requests/create', {
+    const result = await backendService.post<Request>('/requests', {
       request,
     });
     if (result.kind === 'ok') {
@@ -69,7 +66,7 @@ export const updateRequest = async (
   request: Partial<Request>
 ): Promise<Request | null> => {
   try {
-    const result = await backendService.post<Request>('/requests/update', {
+    const result = await backendService.put<Request>('/requests', {
       id,
       request,
     });
@@ -89,7 +86,7 @@ export const updateRequest = async (
 
 export const deleteRequest = async (id: string): Promise<boolean> => {
   try {
-    const result = await backendService.post('/requests/delete', { id });
+    const result = await backendService.delete('/requests', { id });
     if (result.kind === 'ok') {
       return true;
     }

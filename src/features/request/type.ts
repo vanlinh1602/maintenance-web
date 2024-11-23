@@ -15,6 +15,7 @@ export interface Request {
   deviceId: string;
   replacementDeviceId?: string;
   priority: string;
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
 }

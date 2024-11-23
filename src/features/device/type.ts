@@ -10,6 +10,7 @@ export interface Device {
   roomId?: string;
   employeeId?: string;
   type: string;
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
 }
