@@ -54,7 +54,7 @@ export default function MaintenanceDetailsPage() {
   const { userInfo, isMaintenance, isManager } = useUserStore(
     useShallow((state) => ({
       userInfo: state.info,
-      isMaintenance: state.isMaintenance,
+      isMaintenance: state.isMaintenance ?? false,
       isManager: state.isManager,
     }))
   );

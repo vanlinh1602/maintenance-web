@@ -37,7 +37,7 @@ const RequestAssign = ({ onClose, onSubmit }: Props) => {
 
   const filteredUsers = useMemo(() => {
     return Object.values(users).filter((user) => {
-      return roles[user.roleId].isMaintenance;
+      return roles[user.roleId]?.isMaintenance || false;
     });
   }, [users, roles]);
 

@@ -1,12 +1,13 @@
-'use client';
-
+import { saveAs } from 'file-saver';
 import { MoreHorizontal } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import XlsxPopulate from 'xlsx-populate';
 import { useShallow } from 'zustand/shallow';
 
 import { Waiting } from '@/components';
+import { toast } from '@/components/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +37,9 @@ import { useCatalogStore } from '@/features/catalog/hooks';
 import { useDeviceStore } from '@/features/device/hooks';
 import { useRequestStore } from '@/features/request/hooks';
 import { useUserStore } from '@/features/user/hooks';
+import { BACKEND } from '@/lib/config';
 import { requestStatuses } from '@/lib/options';
+import formatError from '@/utils/formatError';
 
 export default function MaintenancePage() {
   const navigate = useNavigate();
@@ -57,9 +60,10 @@ export default function MaintenancePage() {
     }))
   );
 
-  const { requestType } = useCatalogStore(
+  const { requestType, users } = useCatalogStore(
     useShallow((state) => ({
       requestType: state.data.request.type,
+      users: state.data.users,
     }))
   );
 
@@ -89,6 +93,64 @@ export default function MaintenancePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const exportExcel = async () => {
+    const req = new XMLHttpRequest();
+    req.open('GET', `${BACKEND}/excel/template.xlsx`, true);
+    req.responseType = 'arraybuffer';
+    req.onreadystatechange = () => {
+      if (req.readyState === 4 && req.status === 200) {
+        XlsxPopulate.fromDataAsync(req.response).then((wb) => {
+          const ws = wb.sheet(0);
+          let row = 2;
+          filteredRequests.forEach((task, index) => {
+            ws.row(row)
+              .cell(1)
+              .value(index + 1);
+            ws.row(row).cell(2).value(devices[task.deviceId]?.name);
+            ws.row(row).cell(3).value(task.description);
+            ws.row(row)
+              .cell(4)
+              .value(moment(task.createdAt).format('DD/MM/YYYY'));
+            ws.row(row).cell(5).value(users[task.creator]?.name);
+            ws.row(row)
+              .cell(6)
+              .value(users[task.assignedTo || '']?.name);
+            if (task.scheduledDate) {
+              ws.row(row)
+                .cell(7)
+                .value(moment(task.scheduledDate).format('DD/MM/YYYY'));
+            }
+            ws.row(row)
+              .cell(8)
+              .value(devices[task.replacementDeviceId || '']?.name);
+            ws.row(row).cell(9).value(requestStatuses[task.status]?.name);
+            row += 1;
+          });
+          return wb.outputAsync().then((data) => {
+            if (data !== undefined) {
+              saveAs(data as any, 'report-request.xlsx');
+            } else {
+              toast({
+                title: 'Error',
+                description: 'Cannot export excel file',
+                variant: 'destructive',
+              });
+            }
+          });
+        });
+      }
+    };
+
+    req.onerror = (err) => {
+      toast({
+        title: 'Error',
+        description: formatError(err),
+        variant: 'destructive',
+      });
+    };
+    req.send();
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -123,6 +185,7 @@ export default function MaintenancePage() {
             </SelectContent>
           </Select>
         </div>
+        <Button onClick={exportExcel}>Export Excel</Button>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

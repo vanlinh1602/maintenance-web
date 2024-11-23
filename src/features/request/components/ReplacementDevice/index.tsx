@@ -85,7 +85,7 @@ const ReplacementDevice = ({ onClose, onSubmit, currentDevice }: Props) => {
               value={selectedDevice}
             >
               <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select user" />
+                <SelectValue placeholder="Select device" />
               </SelectTrigger>
               <SelectContent>
                 {filteredDevice.map((device) => (
