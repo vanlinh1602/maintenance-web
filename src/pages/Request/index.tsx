@@ -129,10 +129,20 @@ export default function MaintenancePage() {
         {filteredRequests.map((task) => (
           <Card key={task.id}>
             <CardHeader>
-              <CardTitle>
-                {requestType[task.type]?.name} - {devices[task.deviceId]?.name}
-              </CardTitle>
-              <CardDescription>{task.description}</CardDescription>
+              <div className="flex space-x-2">
+                <img
+                  src={task.image}
+                  alt="device"
+                  className="w-20 h-20 object-cover rounded"
+                />
+                <div>
+                  <CardTitle>
+                    {requestType[task.type]?.name} -{' '}
+                    {devices[task.deviceId]?.name}
+                  </CardTitle>
+                  <CardDescription>{task.description}</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center">

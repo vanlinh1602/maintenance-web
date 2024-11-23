@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -27,6 +28,7 @@ import { Device } from '@/features/device/type';
 import { Request } from '@/features/request/type';
 import { useUserStore } from '@/features/user/hooks';
 import { priorities } from '@/lib/options';
+import { convertImgaesToBase64 } from '@/lib/utils';
 
 import { useRequestStore } from '../../hooks';
 
@@ -46,6 +48,8 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
     }))
   );
 
+  const [loading, setLoading] = useState(false);
+
   const { requestTypes } = useCatalogStore(
     useShallow((state) => ({
       requestTypes: state.data.request.type,
@@ -62,7 +66,22 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
     description: '',
     priority: '',
     type: '',
+    image: '',
   });
+
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setLoading(true);
+      const file = e.target.files?.[0];
+      if (!file) {
+        return;
+      }
+      const base64 = await convertImgaesToBase64(file);
+      setEditor({ ...editor, image: base64 });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!editor.type || !editor.description || !editor.priority) {
@@ -77,6 +96,7 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
       ...request,
       ...editor,
       deviceId: device.id,
+      image: editor.image,
       creator: userInfo!.id,
       status: 'pending',
     };
@@ -93,7 +113,7 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
   };
   return (
     <>
-      {handling ? <Waiting /> : null}
+      {handling || loading ? <Waiting /> : null}
       <Dialog
         open
         onOpenChange={(open) => {
@@ -131,6 +151,42 @@ const RequestRepair = ({ device, onClose, request }: Props) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="urgency" className="text-right">
+                Photo
+                <span className="text-red-600">*</span>
+              </Label>
+              <div className="col-span-3">
+                {editor.image ? (
+                  <div className="flex flex-row w-full items-center space-x-2">
+                    <div className="w-40 h-40">
+                      <img
+                        src={editor.image}
+                        alt="device"
+                        className="w-40 h-40 object-cover"
+                      />
+                    </div>
+                    <Button
+                      variant="destructive"
+                      onClick={() => setEditor({ ...editor, image: '' })}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <Input
+                    type="file"
+                    id="image"
+                    className="w-40 h-40 justify-center text-cente items-center"
+                    placeholder="Upload image"
+                    content="Upload image"
+                    accept="image/*"
+                    multiple={false}
+                    onChange={handleUploadImage}
+                  />
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="issue" className="text-right">

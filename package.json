@@ -31,6 +31,7 @@
     "@radix-ui/react-toast": "^1.2.2",
     "@tinymce/tinymce-react": "^5.1.1",
     "apisauce": "^3.1.0",
+    "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -58,6 +59,7 @@
     "tailwindcss-animate": "^1.0.7",
     "tinymce": "^7.4.1",
     "xlsx": "^0.18.5",
+    "xlsx-populate": "^1.21.0",
     "zod": "^3.23.8",
     "zustand": "^5.0.0"
   },

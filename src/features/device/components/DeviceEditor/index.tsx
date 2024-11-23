@@ -1,8 +1,10 @@
 import { CalendarIcon } from '@radix-ui/react-icons';
 import { format } from 'date-fns';
+import { X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
+import { Waiting } from '@/components';
 import { toast } from '@/components/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -28,8 +30,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useCatalogStore } from '@/features/catalog/hooks';
 import { deviceStatuses } from '@/lib/options';
+import { convertImgaesToBase64 } from '@/lib/utils';
 
 import { useDeviceStore } from '../../hooks';
 import { Device } from '../../type';
@@ -55,6 +59,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
     }))
   );
 
+  const [handling, setHandling] = useState(false);
   const [editor, setEditor] = useState<Partial<Device>>(device);
   const [purchaseDate, setPurchaseDate] = useState<Date>();
   const [assignedDate, setAssignedDate] = useState<Date>();
@@ -124,6 +129,20 @@ const DeviceEditor = ({ device, onClose }: Props) => {
     return true;
   }, []);
 
+  const handleUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setHandling(true);
+      const file = e.target.files?.[0];
+      if (!file) {
+        return;
+      }
+      const base64 = await convertImgaesToBase64(file);
+      setEditor({ ...editor, image: base64 });
+    } finally {
+      setHandling(false);
+    }
+  };
+
   const handleSave = () => {
     const data: Partial<Device> = {
       ...editor,
@@ -151,7 +170,8 @@ const DeviceEditor = ({ device, onClose }: Props) => {
         }
       }}
     >
-      <DialogContent>
+      {handling ? <Waiting /> : null}
+      <DialogContent className="w-[800px] container max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
             {device.id ? `Edit ${device.name}` : 'Create new device'}
@@ -160,24 +180,94 @@ const DeviceEditor = ({ device, onClose }: Props) => {
             Enter the details of the device here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Name
-              <span className="text-red-600">*</span>
-            </Label>
-            <Input
-              id="name"
-              className="col-span-3"
-              value={editor.name}
-              onChange={(e) => setEditor({ ...editor, name: e.target.value })}
-            />
+        <div className="grid gap-4 grid-cols-2 py-4">
+          <div className="flex flex-row gap-4 col-span-2">
+            <div>
+              <div className="items-center gap-4 ">
+                <Label htmlFor="image" className="text-right"></Label>
+                {editor.image ? (
+                  <div className="w-52 h-52">
+                    <div className="absolute left-52 text-destructive h-6 w-6 cursor-pointer bg-white rounded-lg">
+                      <X onClick={() => setEditor({ ...editor, image: '' })} />
+                    </div>
+                    <img
+                      src={editor.image}
+                      alt="device"
+                      className="w-52 h-52 object-cover"
+                    />
+                  </div>
+                ) : (
+                  <Input
+                    type="file"
+                    id="image"
+                    className="w-52 h-52 justify-center text-cente items-center"
+                    placeholder="Upload image"
+                    content="Upload image"
+                    accept="image/*"
+                    multiple={false}
+                    onChange={handleUploadImage}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 w-full">
+              <div className="items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                  <span className="text-red-600">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  value={editor.name}
+                  onChange={(e) =>
+                    setEditor({ ...editor, name: e.target.value })
+                  }
+                />
+              </div>
+              <div className="items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Serial
+                  <span className="text-red-600">*</span>
+                </Label>
+                <Input
+                  id="serial"
+                  value={editor.serial}
+                  onChange={(e) =>
+                    setEditor({ ...editor, serial: e.target.value })
+                  }
+                />
+              </div>
+              <div className="items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                  <span className="text-red-600">*</span>
+                </Label>
+                <Select
+                  onValueChange={(value) =>
+                    setEditor({ ...editor, type: value })
+                  }
+                  value={editor.type}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(types).map(([typeKey, type]) => (
+                      <SelectItem key={typeKey} value={typeKey}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+
+          <div className="col-span-2  items-center gap-4">
             <Label htmlFor="description" className="text-right">
               Description
             </Label>
-            <Input
+            <Textarea
               id="description"
               className="col-span-3"
               value={editor.description}
@@ -186,18 +276,7 @@ const DeviceEditor = ({ device, onClose }: Props) => {
               }
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="type" className="text-right">
-              Serial
-              <span className="text-red-600">*</span>
-            </Label>
-            <Input
-              id="serial"
-              className="col-span-3"
-              value={editor.serial}
-              onChange={(e) => setEditor({ ...editor, serial: e.target.value })}
-            />
-          </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="maintenance-date" className="text-right">
               Purchase Date
@@ -224,36 +303,6 @@ const DeviceEditor = ({ device, onClose }: Props) => {
                   mode="single"
                   selected={purchaseDate}
                   onSelect={setPurchaseDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="assigned-date" className="text-right">
-              Assigned Date
-            </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={'outline'}
-                  className={`col-span-3 ${
-                    !assignedDate && 'text-muted-foreground'
-                  }`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {assignedDate ? (
-                    format(assignedDate, 'dd/LL/y')
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={assignedDate}
-                  onSelect={setAssignedDate}
                   initialFocus
                 />
               </PopoverContent>
@@ -290,27 +339,38 @@ const DeviceEditor = ({ device, onClose }: Props) => {
               </PopoverContent>
             </Popover>
           </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="type" className="text-right">
-              Type
-              <span className="text-red-600">*</span>
+            <Label htmlFor="assigned-date" className="text-right">
+              Assigned Date
             </Label>
-            <Select
-              onValueChange={(value) => setEditor({ ...editor, type: value })}
-              value={editor.type}
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(types).map(([typeKey, type]) => (
-                  <SelectItem key={typeKey} value={typeKey}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={'outline'}
+                  className={`col-span-3 ${
+                    !assignedDate && 'text-muted-foreground'
+                  }`}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {assignedDate ? (
+                    format(assignedDate, 'dd/LL/y')
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={assignedDate}
+                  onSelect={setAssignedDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="status" className="text-right">
               Status

@@ -60,8 +60,8 @@ const DeviceTypeTab = () => {
         />
       ) : null}
       <CardHeader>
-        <CardTitle>Device Status Management</CardTitle>
-        <CardDescription>View and manage device status</CardDescription>
+        <CardTitle>Device Type Management</CardTitle>
+        <CardDescription>View and manage device type</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex justify-end items-center mb-4">

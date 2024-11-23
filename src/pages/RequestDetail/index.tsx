@@ -191,57 +191,64 @@ export default function MaintenanceDetailsPage() {
             <CardTitle>Request Details</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Create Date</Label>
-                <p>{moment(request.createdAt).format('MMMM DD, yyyy')}</p>
-              </div>
-              <div>
-                <Label>Creator</Label>
-                <p>{users[request.creator]?.name || request.creator}</p>
-              </div>
-              <div>
-                <Label>Priority</Label>
-                <p style={{ color: priorities[request.priority]?.color }}>
-                  {priorities[request.priority]?.name}
-                </p>
-              </div>
-              <div>
-                <Label>Assign To</Label>
-                <p>{users[request.assignedTo || '']?.name}</p>
-              </div>
-              <div>
-                <Label>Shecduled Date</Label>
-                <p>
-                  {request.scheduledDate
-                    ? moment(request.scheduledDate).format('MMMM DD, yyyy')
-                    : 'Not scheduled'}
-                </p>
-              </div>
-              <div>
-                <Label>Status</Label>
-                <p style={{ color: requestStatuses[request.status]?.color }}>
-                  {requestStatuses[request.status]?.name}
-                </p>
-              </div>
-              <div>
-                <Label className="flex">
-                  Replacement Device
-                  <Edit
-                    onClick={() => setSelectReplacement(true)}
-                    className="h-4 w-4 ml-2"
-                  />
-                </Label>
-                <Button
-                  variant="link"
-                  className="p-0 m-0"
-                  onClick={() =>
-                    navigate(`/device/${request.replacementDeviceId}`)
-                  }
-                >
-                  {devices[request.replacementDeviceId || '']?.name ||
-                    request.replacementDeviceId}
-                </Button>
+            <div className="flex space-x-2">
+              <img
+                src={request.image}
+                alt="device"
+                className="w-60 object-cover rounded-md"
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Create Date</Label>
+                  <p>{moment(request.createdAt).format('MMMM DD, yyyy')}</p>
+                </div>
+                <div>
+                  <Label>Creator</Label>
+                  <p>{users[request.creator]?.name || request.creator}</p>
+                </div>
+                <div>
+                  <Label>Priority</Label>
+                  <p style={{ color: priorities[request.priority]?.color }}>
+                    {priorities[request.priority]?.name}
+                  </p>
+                </div>
+                <div>
+                  <Label>Assign To</Label>
+                  <p>{users[request.assignedTo || '']?.name}</p>
+                </div>
+                <div>
+                  <Label>Shecduled Date</Label>
+                  <p>
+                    {request.scheduledDate
+                      ? moment(request.scheduledDate).format('MMMM DD, yyyy')
+                      : 'Not scheduled'}
+                  </p>
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <p style={{ color: requestStatuses[request.status]?.color }}>
+                    {requestStatuses[request.status]?.name}
+                  </p>
+                </div>
+                <div>
+                  <Label className="flex">
+                    Replacement Device
+                    <Edit
+                      onClick={() => setSelectReplacement(true)}
+                      className="h-4 w-4 ml-2"
+                    />
+                  </Label>
+                  <Button
+                    variant="link"
+                    className="p-0 m-0"
+                    onClick={() =>
+                      navigate(`/device/${request.replacementDeviceId}`)
+                    }
+                  >
+                    {devices[request.replacementDeviceId || '']?.name ||
+                      request.replacementDeviceId}
+                  </Button>
+                </div>
               </div>
             </div>
             <div>

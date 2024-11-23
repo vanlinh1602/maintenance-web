@@ -135,17 +135,26 @@ export default function DeviceDetailsPage() {
             <CardTitle>Specifications</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div>
-              <Label>Warranty ExpireDate</Label>
-              <p>
-                {device.warrantyExpireDate
-                  ? format(new Date(device.warrantyExpireDate), 'dd/LL/y')
-                  : null}
-              </p>
-            </div>
-            <div>
-              <Label>Description</Label>
-              <p>{device.description}</p>
+            <div className="flex space-x-3 justify-between">
+              <div>
+                <div>
+                  <Label>Warranty ExpireDate</Label>
+                  <p>
+                    {device.warrantyExpireDate
+                      ? format(new Date(device.warrantyExpireDate), 'dd/LL/y')
+                      : null}
+                  </p>
+                </div>
+                <div>
+                  <Label>Description</Label>
+                  <p>{device.description}</p>
+                </div>
+              </div>
+              <img
+                src={device.image}
+                alt={device.name}
+                className="w-80 object-cover rounded-lg"
+              />
             </div>
           </CardContent>
         </Card>

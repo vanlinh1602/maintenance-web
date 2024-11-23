@@ -60,8 +60,8 @@ const RequestTypeTab = () => {
         />
       ) : null}
       <CardHeader>
-        <CardTitle>Request Status Management</CardTitle>
-        <CardDescription>View and manage request status</CardDescription>
+        <CardTitle>Request Type Management</CardTitle>
+        <CardDescription>View and manage request type</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex justify-end items-center mb-4">

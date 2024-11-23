@@ -120,14 +120,25 @@ export default function DevicePage() {
         {filteredDevice.map((device) => (
           <Card key={device.id}>
             <CardHeader>
-              <CardTitle>{device.name}</CardTitle>
-              <CardDescription>
-                {deviceTypes[device.type]?.name}
+              <div className="flex space-x-2">
+                <img
+                  src={device.image}
+                  alt={device.name}
+                  className="h-16 w-16 rounded-md object-cover"
+                />
                 <div>
-                  <span className="text-sm text-muted-foreground">Serial:</span>{' '}
-                  {device.serial}
+                  <CardTitle>{device.name}</CardTitle>
+                  <CardDescription>
+                    {deviceTypes[device.type]?.name}
+                    <div>
+                      <span className="text-sm text-muted-foreground">
+                        Serial:
+                      </span>{' '}
+                      {device.serial}
+                    </div>
+                  </CardDescription>
                 </div>
-              </CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col justify-start">
