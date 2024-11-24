@@ -10,7 +10,6 @@ import {
 import moment from 'moment';
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { useShallow } from 'zustand/shallow';
 
 import {
@@ -20,11 +19,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
 import { useCatalogStore } from '@/features/catalog/hooks';
 import { useDeviceStore } from '@/features/device/hooks';
 import { useLiquidationStore } from '@/features/liquidation/hooks';
@@ -32,15 +26,15 @@ import { useRequestStore } from '@/features/request/hooks';
 import { Request } from '@/features/request/type';
 import { useUserStore } from '@/features/user/hooks';
 
-const equipmentPerformance = [
-  { name: 'Jan', efficiency: 65 },
-  { name: 'Feb', efficiency: 59 },
-  { name: 'Mar', efficiency: 80 },
-  { name: 'Apr', efficiency: 81 },
-  { name: 'May', efficiency: 56 },
-  { name: 'Jun', efficiency: 55 },
-  { name: 'Jul', efficiency: 40 },
-];
+// const equipmentPerformance = [
+//   { name: 'Jan', efficiency: 65 },
+//   { name: 'Feb', efficiency: 59 },
+//   { name: 'Mar', efficiency: 80 },
+//   { name: 'Apr', efficiency: 81 },
+//   { name: 'May', efficiency: 56 },
+//   { name: 'Jun', efficiency: 55 },
+//   { name: 'Jul', efficiency: 40 },
+// ];
 
 const renderTasks = (request: Request, title: string) => {
   switch (request.status) {
@@ -228,7 +222,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 mt-6">
-          <Card className="col-span-4">
+          {/* <Card className="col-span-4">
             <CardHeader>
               <CardTitle>Equipment Performance</CardTitle>
             </CardHeader>
@@ -268,8 +262,8 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
-          </Card>
-          <Card className="col-span-3">
+          </Card> */}
+          <Card className="col-span-7">
             <CardHeader>
               <CardTitle>Recent Maintenance Tasks</CardTitle>
               <CardDescription>
