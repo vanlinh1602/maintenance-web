@@ -54,9 +54,10 @@ export default function DevicePage() {
     }))
   );
 
-  const { isMaintenance } = useUserStore(
+  const { isMaintenance, isManager } = useUserStore(
     useShallow((state) => ({
       isMaintenance: state.isMaintenance,
+      isManager: state.isManager,
     }))
   );
 
@@ -90,7 +91,7 @@ export default function DevicePage() {
       ) : null}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Device Management</h1>
-        {isMaintenance ? (
+        {isMaintenance || isManager ? (
           <Button onClick={() => setDeviceEdit({})}>
             <Plus className="mr-2 h-4 w-4" /> Add New Device
           </Button>
@@ -182,7 +183,7 @@ export default function DevicePage() {
                   >
                     View Details
                   </DropdownMenuItem>
-                  {isMaintenance ? (
+                  {isMaintenance || isManager ? (
                     <DropdownMenuItem onSelect={() => setDeviceEdit(device)}>
                       Edit Device
                     </DropdownMenuItem>
@@ -190,7 +191,7 @@ export default function DevicePage() {
                   <DropdownMenuItem onSelect={() => setRepairDevice(device)}>
                     Request Repair
                   </DropdownMenuItem>
-                  {isMaintenance ? (
+                  {isMaintenance || isManager ? (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem

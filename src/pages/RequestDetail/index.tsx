@@ -266,7 +266,7 @@ export default function MaintenanceDetailsPage() {
                   Assign To
                 </Button>
               )}
-              {isMaintenance && request.status !== 'pending' && (
+              {(isMaintenance || isManager) && request.status !== 'pending' && (
                 <Button
                   onClick={() => setShecduledDate(true)}
                   variant="secondary"

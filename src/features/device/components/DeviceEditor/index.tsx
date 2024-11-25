@@ -1,5 +1,3 @@
-import { CalendarIcon } from '@radix-ui/react-icons';
-import { format } from 'date-fns';
 import { X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
@@ -7,7 +5,6 @@ import { useShallow } from 'zustand/shallow';
 import { Waiting } from '@/components';
 import { toast } from '@/components/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -18,11 +15,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -109,7 +101,27 @@ const DeviceEditor = ({ device, onClose }: Props) => {
         variant: 'destructive',
       });
       return false;
+    } else {
+      if (data.warrantyExpireDate < data.purchaseDate) {
+        toast({
+          title: 'Error',
+          description:
+            'Warranty expire date must be greater than purchase date',
+          variant: 'destructive',
+        });
+        return false;
+      }
     }
+
+    if (data.assignedDate && data.assignedDate < data.purchaseDate) {
+      toast({
+        title: 'Error',
+        description: 'Assigned date must be greater than purchase date',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     if (!data.status) {
       toast({
         title: 'Error',
@@ -282,93 +294,42 @@ const DeviceEditor = ({ device, onClose }: Props) => {
               Purchase Date
               <span className="text-red-600">*</span>
             </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={'outline'}
-                  className={`col-span-3 ${
-                    !purchaseDate && 'text-muted-foreground'
-                  }`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {purchaseDate ? (
-                    format(purchaseDate, 'dd/LL/y')
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={purchaseDate}
-                  onSelect={setPurchaseDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Input
+              className="col-span-3"
+              type="date"
+              value={purchaseDate?.toISOString().split('T')[0]}
+              onChange={(e) => {
+                setPurchaseDate(new Date(e.target.value));
+              }}
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="warranty-expire-date" className="text-right">
               Warranty Expire Date
               <span className="text-red-600">*</span>
             </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={'outline'}
-                  className={`col-span-3 ${
-                    !warrantyExpireDate && 'text-muted-foreground'
-                  }`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {warrantyExpireDate ? (
-                    format(warrantyExpireDate, 'dd/LL/y')
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={warrantyExpireDate}
-                  onSelect={setWarrantyExpireDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Input
+              className="col-span-3"
+              type="date"
+              value={warrantyExpireDate?.toISOString().split('T')[0]}
+              onChange={(e) => {
+                setWarrantyExpireDate(new Date(e.target.value));
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="assigned-date" className="text-right">
               Assigned Date
             </Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={'outline'}
-                  className={`col-span-3 ${
-                    !assignedDate && 'text-muted-foreground'
-                  }`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {assignedDate ? (
-                    format(assignedDate, 'dd/LL/y')
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={assignedDate}
-                  onSelect={setAssignedDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Input
+              className="col-span-3"
+              type="date"
+              value={assignedDate?.toISOString().split('T')[0]}
+              onChange={(e) => {
+                setAssignedDate(new Date(e.target.value));
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
