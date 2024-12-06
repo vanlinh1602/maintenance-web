@@ -87,7 +87,9 @@ export default function MaintenancePage() {
   );
 
   useEffect(() => {
-    getRequests();
+    if (!Object.keys(requests).length) {
+      getRequests();
+    }
     if (!Object.keys(devices).length) {
       getDevices();
     }

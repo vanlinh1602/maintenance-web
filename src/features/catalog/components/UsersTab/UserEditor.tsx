@@ -144,6 +144,16 @@ export const UserEditor = ({ user, onCancel, onSave }: Props) => {
                 });
                 return;
               }
+
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editor.email)) {
+                toast({
+                  title: 'Error',
+                  description: 'Invalid email address.',
+                  variant: 'destructive',
+                });
+                return;
+              }
+
               if (
                 Object.values(users).find(
                   (u) => u.id !== editor.id && u.email === editor.email

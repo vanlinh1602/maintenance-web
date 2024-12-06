@@ -87,7 +87,9 @@ export default function LiquidationRequestPage() {
   );
 
   useEffect(() => {
-    getLiquidations();
+    if (!Object.keys(liquidations).length) {
+      getLiquidations();
+    }
     if (!Object.keys(devices).length) {
       // Fetch devices if not available
       getDevices();

@@ -122,9 +122,15 @@ export default function Dashboard() {
     if (!isManager) {
       navigate('/device');
     } else {
-      getDevices();
-      getRequests();
-      getLiquidations();
+      if (!Object.keys(devices).length) {
+        getDevices();
+      }
+      if (!Object.keys(requests).length) {
+        getRequests();
+      }
+      if (!Object.keys(liquidations).length) {
+        getLiquidations();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
