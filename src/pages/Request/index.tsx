@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { MoreHorizontal } from 'lucide-react';
+import { FilterIcon, MoreHorizontal } from 'lucide-react';
 import moment from 'moment';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -26,15 +26,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useCatalogStore } from '@/features/catalog/hooks';
 import { useDeviceStore } from '@/features/device/hooks';
+import FilterRequest from '@/features/request/components/FilterRequest';
 import { useRequestStore } from '@/features/request/hooks';
 import { useUserStore } from '@/features/user/hooks';
 import { BACKEND } from '@/lib/config';
@@ -73,15 +67,32 @@ export default function MaintenancePage() {
     }))
   );
 
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState<{
+    open: boolean;
+    from?: Date;
+    to?: Date;
+    status?: string;
+  }>({ open: false });
 
   const filteredRequests = useMemo(
     () =>
       Object.values(requests).filter((task) => {
-        if (filter === 'All') {
-          return true;
+        if (filter.from) {
+          if (moment(task.createdAt).isBefore(filter.from)) {
+            return false;
+          }
         }
-        return task.status === filter;
+        if (filter.to) {
+          if (moment(task.createdAt).isAfter(filter.to)) {
+            return false;
+          }
+        }
+        if (filter.status && filter.status !== 'all') {
+          if (task.status !== filter.status) {
+            return false;
+          }
+        }
+        return true;
       }),
     [requests, filter]
   );
@@ -157,6 +168,12 @@ export default function MaintenancePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {handling ? <Waiting /> : null}
+      {filter.open ? (
+        <FilterRequest
+          onClose={() => setFilter({ open: false })}
+          onSubmit={(values) => setFilter({ ...values, open: false })}
+        />
+      ) : null}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Maintenance Management</h1>
       </div>
@@ -173,19 +190,23 @@ export default function MaintenancePage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div> */}
-          <Select onValueChange={(value) => setFilter(value)}>
-            <SelectTrigger className="w-[180px] bg-white">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All</SelectItem>
-              {Object.entries(requestStatuses).map(([key, value]) => (
-                <SelectItem key={key} value={key}>
-                  {value.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Button
+            onClick={() => setFilter((pre) => ({ ...pre, open: true }))}
+            variant="outline"
+            className="h-8"
+          >
+            <FilterIcon className="h-4 w-4" />
+            Filter
+          </Button>
+          {Object.values(filter).some((value) => value) ? (
+            <Button
+              onClick={() => setFilter({ open: false })}
+              variant="outline"
+              className="h-8"
+            >
+              Clear Filter
+            </Button>
+          ) : null}
         </div>
         <Button onClick={exportExcel}>Export Excel</Button>
       </div>

@@ -128,7 +128,10 @@ export const Header = () => {
               className="cursor-pointer"
               onClick={() => {
                 auth.signOut().then(() => {
-                  signOut();
+                  signOut().then(() => {
+                    navigate('/login', { replace: true });
+                    window.location.reload();
+                  });
                 });
               }}
             >

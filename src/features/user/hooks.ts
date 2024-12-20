@@ -35,6 +35,7 @@ export const useUserStore = create<UserState & UserActions>()(
     signOut: async () => {
       set({ handling: true }, false, { type: 'user/auth' });
       await signOut();
+
       set(
         () => ({
           handling: false,

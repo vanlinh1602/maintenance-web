@@ -162,7 +162,6 @@ export default function Dashboard() {
     );
     return sortedRequests.slice(0, 3);
   }, [requests]);
-  console.log('requestList', requestList);
 
   return (
     <div className="flex bg-gray-100 dark:bg-gray-900">

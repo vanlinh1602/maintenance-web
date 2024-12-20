@@ -256,7 +256,7 @@ export default function MaintenanceDetailsPage() {
               <p>{request.description}</p>
             </div>
             <div className="space-x-2">
-              {(isMaintenance && request.status !== 'pending') || isManager ? (
+              {isMaintenance || isManager ? (
                 <Button onClick={() => setUpdateStatus(true)}>
                   Update Status
                 </Button>

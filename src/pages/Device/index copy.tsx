@@ -11,6 +11,8 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
+  CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import {
@@ -25,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -125,112 +128,27 @@ export default function DevicePage() {
         </div> */}
       </div>
 
-      <Card>
-        <CardContent>
-          <Table className="p-2">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Info</TableHead>
-                <TableHead>Room</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Last Assign</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDevice.map((device) => (
-                <TableRow key={device.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex space-x-2">
-                      <img
-                        src={device.image}
-                        alt={device.name}
-                        className="h-16 w-16 rounded-md object-cover"
-                      />
-                      <div>
-                        <CardTitle>{device.name}</CardTitle>
-                        <CardDescription>
-                          {deviceTypes[device.type]?.name}
-                          <div>
-                            <span className="text-sm text-muted-foreground">
-                              Serial:
-                            </span>{' '}
-                            {device.serial}
-                          </div>
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {rooms[device.roomId || '']?.name ||
-                      'Not assigned to any room'}
-                  </TableCell>
-                  <TableCell>
-                    {users[device.employeeId || '']?.name ||
-                      'Not assigned to any user'}
-                  </TableCell>
-                  <TableCell>
-                    {moment(device.assignedDate).format('DD/MM/YYYY')}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      style={{
-                        backgroundColor: deviceStatuses[device.status]?.color,
-                      }}
-                    >
-                      {deviceStatuses[device.status]?.name}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem
-                          onSelect={() => navigate(`/device/${device.id}`)}
-                        >
-                          View Details
-                        </DropdownMenuItem>
-                        {isMaintenance || isManager ? (
-                          <DropdownMenuItem
-                            onSelect={() => setDeviceEdit(device)}
-                          >
-                            Edit Device
-                          </DropdownMenuItem>
-                        ) : null}
-                        <DropdownMenuItem
-                          onSelect={() => setRepairDevice(device)}
-                        >
-                          Request Repair
-                        </DropdownMenuItem>
-                        {isMaintenance || isManager ? (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onSelect={() => deleteDevice(device.id)}
-                            >
-                              Delete Device
-                            </DropdownMenuItem>
-                          </>
-                        ) : null}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <Table>
+        <TableCaption>A list of your recent invoices.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Invoice</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Method</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell className="font-medium">INV001</TableCell>
+            <TableCell>Paid</TableCell>
+            <TableCell>Credit Card</TableCell>
+            <TableCell className="text-right">$250.00</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
 
-      {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredDevice.map((device) => (
           <Card key={device.id}>
             <CardHeader>
@@ -320,7 +238,7 @@ export default function DevicePage() {
             </CardFooter>
           </Card>
         ))}
-      </div> */}
+      </div>
     </div>
   );
 }
