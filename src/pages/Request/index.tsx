@@ -10,14 +10,7 @@ import { Waiting } from '@/components';
 import { toast } from '@/components/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,13 +19,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useCatalogStore } from '@/features/catalog/hooks';
 import { useDeviceStore } from '@/features/device/hooks';
 import FilterRequest from '@/features/request/components/FilterRequest';
 import { useRequestStore } from '@/features/request/hooks';
 import { useUserStore } from '@/features/user/hooks';
 import { BACKEND } from '@/lib/config';
-import { requestStatuses } from '@/lib/options';
+import { priorities, requestStatuses } from '@/lib/options';
 import formatError from '@/utils/formatError';
 
 export default function MaintenancePage() {
@@ -77,13 +78,14 @@ export default function MaintenancePage() {
   const filteredRequests = useMemo(
     () =>
       Object.values(requests).filter((task) => {
+        const createdDate = moment(task.createdAt).startOf('day').valueOf();
         if (filter.from) {
-          if (moment(task.createdAt).isBefore(filter.from)) {
+          if (createdDate < moment(filter.from).startOf('day').valueOf()) {
             return false;
           }
         }
         if (filter.to) {
-          if (moment(task.createdAt).isAfter(filter.to)) {
+          if (createdDate > moment(filter.to).endOf('day').valueOf()) {
             return false;
           }
         }
@@ -211,7 +213,102 @@ export default function MaintenancePage() {
         <Button onClick={exportExcel}>Export Excel</Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <Card>
+        <CardContent>
+          <Table className="p-2">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Info</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Create</TableHead>
+                <TableHead>Assign To</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredRequests.map((task) => (
+                <TableRow key={task.id}>
+                  <TableCell className="">
+                    <div className="flex space-x-2 items-center">
+                      <img
+                        src={task.image}
+                        alt="device"
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                      <div>
+                        {requestType[task.type]?.name} -{' '}
+                        {devices[task.deviceId]?.name}
+                        <div>
+                          Priority:{' '}
+                          <span
+                            style={{ color: priorities[task.priority]?.color }}
+                          >
+                            {priorities[task.priority]?.name}
+                          </span>
+                        </div>
+                        <div>Creator: {users[task.creator]?.name}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{task.description}</TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">
+                      {moment(task.createdAt).format('DD/MM/YYYY')}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {task.assignedTo ? users[task.assignedTo]?.name : 'N/A'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      style={{
+                        backgroundColor: requestStatuses[task.status]?.color,
+                      }}
+                    >
+                      {requestStatuses[task.status]?.name}
+                    </Badge>
+                  </TableCell>
+
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          onSelect={() => navigate(`/request/${task.id}`)}
+                        >
+                          View Details
+                        </DropdownMenuItem>
+                        {/* <DropdownMenuItem>Edit Task</DropdownMenuItem>
+                  <DropdownMenuItem>Mark as Completed</DropdownMenuItem> */}
+                        {task.creator === userInfo?.id.toString() ? (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onSelect={() => deleteRequest(task.id)}
+                            >
+                              Cancel Task
+                            </DropdownMenuItem>
+                          </>
+                        ) : null}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredRequests.map((task) => (
           <Card key={task.id}>
             <CardHeader>
@@ -259,8 +356,6 @@ export default function MaintenancePage() {
                   >
                     View Details
                   </DropdownMenuItem>
-                  {/* <DropdownMenuItem>Edit Task</DropdownMenuItem>
-                  <DropdownMenuItem>Mark as Completed</DropdownMenuItem> */}
                   {task.creator === userInfo?.id.toString() ? (
                     <>
                       <DropdownMenuSeparator />
@@ -277,7 +372,7 @@ export default function MaintenancePage() {
             </CardFooter>
           </Card>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }
