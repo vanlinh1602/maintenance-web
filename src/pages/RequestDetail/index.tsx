@@ -274,6 +274,23 @@ export default function MaintenanceDetailsPage() {
                   Schedule
                 </Button>
               )}
+              {request.creator === userInfo?.id &&
+                request.status === 'done' && (
+                  <Button
+                    onClick={() => {
+                      const notes = request.notes || [];
+                      notes.push({
+                        userId: userInfo!.id,
+                        message: 'Confirm maintenance completed',
+                        timestamp: moment().valueOf(),
+                      });
+                      updateRequest(request.id, { status: 'completed', notes });
+                    }}
+                    variant="secondary"
+                  >
+                    Accept
+                  </Button>
+                )}
             </div>
           </CardContent>
         </Card>

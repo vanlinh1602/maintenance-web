@@ -40,9 +40,13 @@ export const requestStatuses: CustomObject<{
     name: 'Rejected',
     color: 'red',
   },
+  done: {
+    name: 'Done',
+    color: 'violet',
+  },
   completed: {
     name: 'Completed',
-    color: 'green',
+    color: 'orange',
   },
 };
 

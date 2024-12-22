@@ -24,6 +24,6 @@ export type DeviceActions = {
   getDevices: () => void;
   getFilterDevice: (filter: Partial<Device>) => void;
   createDevice: (device: Partial<Device>) => void;
-  updateDevice: (id: string, device: Partial<Device>) => void;
+  updateDevice: (id: string, device: Partial<Device>) => Promise<void>;
   deleteDevice: (id: string) => void;
 };

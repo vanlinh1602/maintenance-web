@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 
+import { Waiting } from '@/components';
+import { toast } from '@/components/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,15 +15,18 @@ import { useDeviceStore } from '@/features/device/hooks';
 import { Device } from '@/features/device/type';
 import { RequestRepair } from '@/features/request/components';
 import { useRequestStore } from '@/features/request/hooks';
+import { useUserStore } from '@/features/user/hooks';
 import { deviceStatuses, requestStatuses } from '@/lib/options';
 
 export default function DeviceDetailsPage() {
   const { id } = useParams<{ id: string }>();
 
-  const { devices, getFilterDevice } = useDeviceStore(
+  const { devices, getFilterDevice, updateDevice, handling } = useDeviceStore(
     useShallow((state) => ({
       devices: state.data,
+      handling: state.handling,
       getFilterDevice: state.getFilterDevice,
+      updateDevice: state.updateDevice,
     }))
   );
 
@@ -47,6 +52,13 @@ export default function DeviceDetailsPage() {
     [requests, id]
   );
 
+  const { isMaintenance, isManager } = useUserStore(
+    useShallow((state) => ({
+      isManager: state.isManager,
+      isMaintenance: state.isMaintenance,
+    }))
+  );
+
   useEffect(() => {
     if (!device.id) {
       getFilterDevice({ id });
@@ -59,6 +71,7 @@ export default function DeviceDetailsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {handling ? <Waiting /> : null}
       {createRequest && (
         <RequestRepair
           device={device}
@@ -87,9 +100,33 @@ export default function DeviceDetailsPage() {
           <CardHeader>
             <CardTitle className="flex justify-between">
               <div>Device Details</div>
-              <Button onClick={() => setCreateRequest(true)}>
-                Create Request
-              </Button>
+              <div className="space-x-2">
+                {isMaintenance || isManager ? (
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (!device.employeeId) {
+                        toast({
+                          title: 'Device is not assigned to anyone',
+                        });
+                        return;
+                      }
+                      updateDevice(device.id, {
+                        employeeId: '',
+                      }).then(() => {
+                        toast({
+                          title: 'Device recall successfully',
+                        });
+                      });
+                    }}
+                  >
+                    Device recall
+                  </Button>
+                ) : null}
+                <Button onClick={() => setCreateRequest(true)}>
+                  Create Request
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 
 import { Waiting } from '@/components';
+import { toast } from '@/components/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,14 +44,16 @@ import { deviceStatuses } from '@/lib/options';
 export default function DevicePage() {
   const navigate = useNavigate();
 
-  const { handling, devices, getDevices, deleteDevice } = useDeviceStore(
-    useShallow((state) => ({
-      handling: state.handling,
-      devices: state.data,
-      getDevices: state.getDevices,
-      deleteDevice: state.deleteDevice,
-    }))
-  );
+  const { handling, devices, getDevices, deleteDevice, updateDevice } =
+    useDeviceStore(
+      useShallow((state) => ({
+        handling: state.handling,
+        devices: state.data,
+        getDevices: state.getDevices,
+        deleteDevice: state.deleteDevice,
+        updateDevice: state.updateDevice,
+      }))
+    );
 
   const { users, rooms, deviceTypes } = useCatalogStore(
     useShallow((state) => ({
@@ -202,6 +205,21 @@ export default function DevicePage() {
                             onSelect={() => setDeviceEdit(device)}
                           >
                             Edit Device
+                          </DropdownMenuItem>
+                        ) : null}
+                        {(isMaintenance || isManager) && device.employeeId ? (
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              updateDevice(device.id, {
+                                employeeId: '',
+                              }).then(() => {
+                                toast({
+                                  title: 'Device recall successfully',
+                                });
+                              });
+                            }}
+                          >
+                            Device recall
                           </DropdownMenuItem>
                         ) : null}
                         <DropdownMenuItem
