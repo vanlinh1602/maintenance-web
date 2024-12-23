@@ -233,10 +233,12 @@ export default function MaintenanceDetailsPage() {
                 <div>
                   <Label className="flex">
                     Replacement Device
-                    <Edit
-                      onClick={() => setSelectReplacement(true)}
-                      className="h-4 w-4 ml-2"
-                    />
+                    {isMaintenance || isManager ? (
+                      <Edit
+                        onClick={() => setSelectReplacement(true)}
+                        className="h-4 w-4 ml-2"
+                      />
+                    ) : null}
                   </Label>
                   <Button
                     variant="link"
