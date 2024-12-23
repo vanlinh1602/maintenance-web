@@ -276,7 +276,7 @@ export default function MaintenanceDetailsPage() {
                   Schedule
                 </Button>
               )}
-              {request.creator === userInfo?.id &&
+              {request.creator.toString() === userInfo?.id.toString() &&
                 request.status === 'done' && (
                   <Button
                     onClick={() => {
